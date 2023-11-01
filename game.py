@@ -1,52 +1,21 @@
-import pygame as py
+import pygame as pg
+from SETTINGS import *
+from pygame import Vector2 as vec
+from tetromino import *
 
 class Game:
-    fullBlocks = []
+    tetrominoes: list
+    fullBlocks: list[vec]
 
-    def __init__(self):
-        pass
+    def __init__(self, tetrominoes):
+        self.fullBlocks = [[vec(x, -BOARD_HEIGHT)] for x in range(-4, 6)]
+        self.tetrominoes = tetrominoes
+        print(self.fullBlocks)
 
-class Node:
-    data = None
-    pointer = 0
+    def addFullBlocks(self, tetromino):
+        for block in tetromino.blocks:
+            self.fullBlocks.append(block)
 
-    def __init__(self, data, pointer):
-        self.setData(data)
-        self.setPointer(pointer)
 
-    def setPointer(self, pointer):
-        self.pointer = pointer
-
-    def getPointer(self):
-        return self.pointer
-
-    def setData(self, data):
-        self.data = data
-
-    def getData(self):
-        return self.data
-
-class linkedList:
-    head = 0
-    tail = 0
-    vals = []
-
-    def __init__(self, vals):
-        for i, val in enumerate(vals):
-            self.vals.append(Node(val, i))
-        self.head = 0
-        self.tail = len(vals) - 1
-
-    def removeNode(self, position):
-        delNode = self.findNode(self, position)
-        for node in self.vals[position + 1:]:
-            node.setPointer(node.getPointer() - 1)
-
-    def findNode(self, pointer):
-        if self.head <= pointer <= self.tail:
-            for node in self.vals:
-                if node.pointer == pointer:
-                    return node
-        return None
 
 

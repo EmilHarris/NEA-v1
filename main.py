@@ -1,7 +1,29 @@
-from Tetromino import *
+# Imports
+import pygame as pg
+from tetromino import *
 from game import *
-L = Tetromino([(0, 1), (1, 0), (2, 0)], 'Purple')
-L.rotate(-1)
-print(L.blocks)
+from SETTINGS import *
+from game import *
 
-linked_list = linkedList([(0,0), (0,1), (0, 2)])
+# Start pygame and set up window and clock
+pg.init()
+win = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pg.time.Clock()
+game = Game([I, J, Z, S, I, O, T])
+
+# Main game loop
+running = True
+j =Z(game)
+
+while running:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            pg.quit()
+
+    j.draw(win)
+
+    pg.display.flip()
+    clock.tick(FPS)
+
+
+
