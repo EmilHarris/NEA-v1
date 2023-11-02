@@ -7,7 +7,7 @@ from pygame import Vector2 as vec
 from game import *
 
 
-class Tetromino(pg.sprite.Sprite):
+class Tetromino:
     blocks: list[vec]
     orgBlocks: list[vec]
     movement: vec
@@ -21,6 +21,7 @@ class Tetromino(pg.sprite.Sprite):
         self.colour = colour
         self.game = game
         self.left = pg.mouse.get_pos()[0]
+        self.rect = Rect(self)
         super().__init__()
 
     def setBlocks(self, blocks: list[vec]):
@@ -46,6 +47,12 @@ class Tetromino(pg.sprite.Sprite):
     def update(self):
         proposed = []
         self.left = pg.mouse.get_pos()[0] - (pg.mouse.get_pos()[0] % BLOCK_WIDTH)
+
+        if self.rect.left * BLOCK_WIDTH + self.left < BOARD_TOP_LEFT[0]:
+            self.left = BOARD_TOP_LEFT[0] - self.rect.left * BLOCK_WIDTH
+
+        if self.rect.right * BLOCK_WIDTH + self.left + BLOCK_WIDTH > BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX:
+            self.left = BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX - self.rect.right * BLOCK_WIDTH - BLOCK_WIDTH
 
 
         '''if self.checkBlocks(proposed):
@@ -94,3 +101,20 @@ class S(Tetromino):
 class Z(Tetromino):
     def __init__(self, game):
         super().__init__([(1, 0), (-1, 1), (0, 1)], RED, game)
+
+class Rect:
+    left: int
+    right: int
+    top: int
+    bottom: int
+
+    def __init__(self, tetromino: Tetromino):
+        self.left, self.right = self.getBlockMaxAndMin(0, tetromino)
+        self.bottom, self.top = self.getBlockMaxAndMin(1, tetromino)
+
+    def getBlockMaxAndMin(self, dim: int, tetromino: Tetromino) -> tuple:
+        blockList = [block[dim] for block in tetromino.blocks]
+        minimum = min(blockList)
+        maximum = max(blockList)
+        return minimum, maximum
+
