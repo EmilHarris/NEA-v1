@@ -45,14 +45,15 @@ class Tetromino(pg.sprite.Sprite):
 
     def update(self):
         proposed = []
-        self.left = pg.mouse.get_pos()[0]
+        self.left = pg.mouse.get_pos()[0] - (pg.mouse.get_pos()[0] % BLOCK_WIDTH)
+
 
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''
 
     def draw(self, surf):
         for i, block in enumerate(self.blocks):
-            blockRect = pg.Rect((self.left + BLOCK_WIDTH * block[0], BLOCK_WIDTH * (block[1] + 3)),
+            blockRect = pg.Rect((self.left + BLOCK_WIDTH * block[0], BOARD_TOP_LEFT[1] + BLOCK_HEIGHT * (block[1] + 1)),
                                 (BLOCK_WIDTH, BLOCK_HEIGHT))
             pg.draw.rect(surf, self.colour, blockRect)
 
