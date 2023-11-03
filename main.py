@@ -1,7 +1,8 @@
 # Imports
 
-import pygame
 import pygame as pg
+from pygame.locals import K_LEFT, K_a, K_RIGHT, K_d
+
 from Tetromino import *
 from game import *
 from SETTINGS import *
@@ -15,12 +16,13 @@ game = Game([I, J, Z, S, I, O, T])
 
 # Main game loop
 running = True
-j = I(game)
+j = T(game)
 
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             pg.quit()
+
     j.update()
 
     win.fill(BLACK)

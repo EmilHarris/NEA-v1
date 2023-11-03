@@ -3,13 +3,16 @@
 import pygame as pg
 import math as m
 from pygame import Vector2 as vec
+from pygame.locals import K_RIGHT, K_d, K_LEFT, K_a
+
 from game import *
+from pygame.key import *
 
 
 class Tetromino: # Tetromino class is used to create and control tetrominoes
     blocks: list[vec]
     orgBlocks: list[vec]
-    movement: vec
+    movement: vec = (0, 0)
     colour: str
     game: Game
     left: float
@@ -32,6 +35,8 @@ class Tetromino: # Tetromino class is used to create and control tetrominoes
         else:
             self.game.addFullBlocks(self.blocks)
 
+        self.rect.getRect(self)
+
     def checkBlocks(self, proposed: list[vec]) -> bool:  # Checks if the block can move; returns True or False
         for column in self.game.fullBlocks:
             for block in column:
@@ -49,6 +54,15 @@ class Tetromino: # Tetromino class is used to create and control tetrominoes
         if self.rect.right * BLOCK_WIDTH + self.left + BLOCK_WIDTH > BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX:
             self.left = BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX - self.rect.right * BLOCK_WIDTH - BLOCK_WIDTH
 
+        self.movement = vec(self.left / BLOCK_WIDTH, 0)
+
+        keys = pg.key.get_pressed()
+
+        if (keys[K_LEFT] or keys[K_a]):
+            self.rotate(1)
+
+        if (keys[K_RIGHT] or keys[K_d]):
+            self.rotate(-1)
 
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''
@@ -105,7 +119,10 @@ class Rect:  # Rect class to tell tetromino where its outermost blocks lie
     top: int
     bottom: int
 
-    def __init__(self, tetromino: Tetromino): # Sets left, right, top and bottom
+    def __init__(self, tetromino: Tetromino):  # Sets left, right, top and bottom
+        self.getRect(tetromino)
+
+    def getRect(self, tetromino: Tetromino):
         self.left, self.right = self.getBlockMaxAndMin(0, tetromino)
         self.bottom, self.top = self.getBlockMaxAndMin(1, tetromino)
 
