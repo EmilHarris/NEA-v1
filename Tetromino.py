@@ -9,13 +9,14 @@ from game import *
 from pygame.key import *
 
 
-class Tetromino: # Tetromino class is used to create and control tetrominoes
+class Tetromino:  # Tetromino class is used to create and control tetrominoes
     blocks: list[vec]
     orgBlocks: list[vec]
     movement: vec = (0, 0)
     colour: str
     game: Game
     left: float
+    lastRotation: float
 
     def __init__(self, blocks: list[tuple], colour: str, game: Game):  # Sets attributes and initial position
         self.blocks = [vec(0, 0)] + [vec(block[0], block[1]) for block in blocks]
@@ -24,14 +25,16 @@ class Tetromino: # Tetromino class is used to create and control tetrominoes
         self.game = game
         self.left = pg.mouse.get_pos()[0]
         self.rect = Rect(self)
+        self.lastRotation = pg.time.get_ticks()
 
     def rotate(self, direction: int):  # Rotates the tetromino, -1 for cw, 1 for anti-cw
         proposed = [0, 0, 0, 0]
         for i, block in enumerate(self.orgBlocks):
-            proposed[i] = block.rotate(90 * direction) + self.movement
+            proposed[i] = block.rotate(90 * direction)
 
         if self.checkBlocks(proposed):
-            self.blocks = proposed.copy()
+            self.orgBlocks = proposed.copy()
+            self.blocks = [block + self.movement for block in proposed]
         else:
             self.game.addFullBlocks(self.blocks)
 
@@ -46,6 +49,18 @@ class Tetromino: # Tetromino class is used to create and control tetrominoes
 
     def update(self):  # Changes the position of the block
         # proposed = []
+        now = pg.time.get_ticks()
+        keys = pg.key.get_pressed()
+
+        if now - self.lastRotation > ROT_TIME:
+            if (keys[K_LEFT] or keys[K_a]):
+                self.rotate(-1)
+                self.lastRotation = pg.time.get_ticks()
+
+            if (keys[K_RIGHT] or keys[K_d]):
+                self.rotate(1)
+                self.lastRotation = pg.time.get_ticks()
+
         self.left = pg.mouse.get_pos()[0] - (pg.mouse.get_pos()[0] % BLOCK_WIDTH)
 
         if self.rect.left * BLOCK_WIDTH + self.left < BOARD_TOP_LEFT[0]:
@@ -56,18 +71,10 @@ class Tetromino: # Tetromino class is used to create and control tetrominoes
 
         self.movement = vec(self.left / BLOCK_WIDTH, 0)
 
-        keys = pg.key.get_pressed()
-
-        if (keys[K_LEFT] or keys[K_a]):
-            self.rotate(1)
-
-        if (keys[K_RIGHT] or keys[K_d]):
-            self.rotate(-1)
-
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''
 
-    def draw(self, surf):  # Draws the block on the screen
+    def draw(self, surf):  # Draws the tetromino on the screen
         for i, block in enumerate(self.blocks):
             blockRect = pg.Rect((self.left + BLOCK_WIDTH * block[0], BOARD_TOP_LEFT[1] + BLOCK_HEIGHT * (block[1] + 1)),
                                 (BLOCK_WIDTH, BLOCK_HEIGHT))
