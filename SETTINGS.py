@@ -20,6 +20,7 @@ ROT_TIME = 200
 
 FPS = 30
 MOUSE_SENSITIVITY_X = 1.5
+TITLE = 'Tetris'
 
 # Colours
 

@@ -4,9 +4,8 @@ import pygame as pg
 import math as m
 from pygame import Vector2 as vec
 from pygame.locals import K_RIGHT, K_d, K_LEFT, K_a
-
-from game import *
 from pygame.key import *
+from SETTINGS import *
 
 
 class Tetromino:  # Tetromino class is used to create and control tetrominoes
@@ -14,11 +13,10 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
     orgBlocks: list[vec]
     movement: vec = (0, 0)
     colour: str
-    game: Game
     left: float
     lastRotation: float
 
-    def __init__(self, blocks: list[tuple], colour: str, game: Game):  # Sets attributes and initial position
+    def __init__(self, blocks: list[tuple], colour: str, game):  # Sets attributes and initial position
         self.blocks = [vec(0, 0)] + [vec(block[0], block[1]) for block in blocks]
         self.orgBlocks = self.blocks.copy()
         self.colour = colour
@@ -28,17 +26,7 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         self.lastRotation = pg.time.get_ticks()
 
     def rotate(self, direction: int):  # Rotates the tetromino, -1 for cw, 1 for anti-cw
-        proposed = [0, 0, 0, 0]
-        for i, block in enumerate(self.orgBlocks):
-            proposed[i] = block.rotate(90 * direction)
-
-        if self.checkBlocks(proposed):
-            self.orgBlocks = proposed.copy()
-            self.blocks = [block + self.movement for block in proposed]
-        else:
-            self.game.addFullBlocks(self.blocks)
-
-        self.rect.getRect(self)
+        pass
 
     def checkBlocks(self, proposed: list[vec]) -> bool:  # Checks if the block can move; returns True or False
         for column in self.game.fullBlocks:
@@ -48,7 +36,7 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         return True
 
     def update(self):  # Changes the position of the block
-        # proposed = []
+        '''# proposed = []
         now = pg.time.get_ticks()
         keys = pg.key.get_pressed()
 
@@ -59,9 +47,9 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
 
             if (keys[K_RIGHT] or keys[K_d]):
                 self.rotate(1)
-                self.lastRotation = pg.time.get_ticks()
+                self.lastRotation = pg.time.get_ticks()'''
 
-        self.left = pg.mouse.get_pos()[0] - (pg.mouse.get_pos()[0] % BLOCK_WIDTH)
+        self.left = m.floor(pg.mouse.get_pos()[0] / BLOCK_WIDTH)
 
         if self.rect.left * BLOCK_WIDTH + self.left < BOARD_TOP_LEFT[0]:
             self.left = BOARD_TOP_LEFT[0] - self.rect.left * BLOCK_WIDTH
@@ -69,7 +57,7 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         if self.rect.right * BLOCK_WIDTH + self.left + BLOCK_WIDTH > BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX:
             self.left = BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX - self.rect.right * BLOCK_WIDTH - BLOCK_WIDTH
 
-        self.movement = vec(self.left / BLOCK_WIDTH, 0)
+        self.movement = vec(self.left, 0)
 
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''

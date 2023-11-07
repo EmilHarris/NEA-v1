@@ -1,38 +1,68 @@
 # Imports
 
 import pygame as pg
-from pygame.locals import K_LEFT, K_a, K_RIGHT, K_d
-
+from pygame.locals import *
+from pygame import Vector2 as vec
 from Tetromino import *
-from game import *
 from SETTINGS import *
-from game import *
+import sys
 
-# Start pygame and set up window and clock
-pg.init()
-win = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pg.RESIZABLE)
-clock = pg.time.Clock()
-game = Game([I, J, Z, S, I, O, T])
-pg.mouse.set_visible(False)
-game.dt = 0
 
-# Main game loop
-running = True
-j = T(game)
+class Game:  # Game class for controlling the program
+    tetrominoes: list
+    fullBlocks: list[vec]
+    boardRect: pg.Rect
+    dt: float
+    currTet: Tetromino
 
-while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            pg.quit()
+    def __init__(self):  # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
+        pg.init()
+        self.win = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pg.RESIZABLE)
+        pg.display.set_caption(TITLE)
+        self.clock = pg.time.Clock()
+        self.tetrominoes = [L, S, Z, I, T, O, J]
 
-    j.update()
+    def addFullBlocks(self, tetromino):  # When a block stops, it will be added to the fullBlocks array with this function
+        for block in tetromino.blocks:
+            self.fullBlocks.append(block)
 
-    win.fill(BLACK)
-    pg.draw.rect(win, WHITE, game.boardRect, BOARD_BORDER_WIDTH)
-    j.draw(win)
+    def menu(self):
+        pass
 
-    pg.display.flip()
-    game.dt = clock.tick(FPS) / 1000
+    def startGame(self, mode=0):
+        self.fullBlocks = [vec(x, -BOARD_HEIGHT_BLK) for x in range(-int(BOARD_WIDTH_BLK / 2), int(BOARD_WIDTH_BLK / 2))]
+        self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
+                                 (BOARD_WIDTH_PIX + 2 * BOARD_BORDER_WIDTH, BOARD_HEIGHT_PIX + 2 * BOARD_BORDER_WIDTH))
+        self.currTet = T(self)
+        self.main()
+
+    def main(self):
+        print('yes')
+        self.dt = self.clock.tick(FPS) / 1000
+        self.getEvents()
+        # self.update()
+        self.draw()
+        self.main()
+
+    def getEvents(self):
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                self.quit()
+
+    def quit(self):
+        pg.quit()
+        sys.exit()
+
+    def update(self):
+        self.currTet.update()
+
+    def draw(self):
+        pg.draw.rect(self.win, WHITE, self.boardRect, BOARD_BORDER_WIDTH)
+        self.currTet.draw(self.win)
+        pg.display.flip()
+
+game = Game()
+game.startGame()
 
 
 
