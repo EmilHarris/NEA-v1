@@ -30,17 +30,17 @@ class Game:  # Game class for controlling the program
         pass
 
     def startGame(self, mode=0):
-        self.fullBlocks = [vec(x, -BOARD_HEIGHT_BLK) for x in range(-int(BOARD_WIDTH_BLK / 2), int(BOARD_WIDTH_BLK / 2))]
+        pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        self.fullBlocks = [vec(x, -BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
         self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
                                  (BOARD_WIDTH_PIX + 2 * BOARD_BORDER_WIDTH, BOARD_HEIGHT_PIX + 2 * BOARD_BORDER_WIDTH))
         self.currTet = T(self)
         self.main()
 
     def main(self):
-        print('yes')
         self.dt = self.clock.tick(FPS) / 1000
         self.getEvents()
-        # self.update()
+        self.update()
         self.draw()
         self.main()
 
@@ -57,6 +57,7 @@ class Game:  # Game class for controlling the program
         self.currTet.update()
 
     def draw(self):
+        self.win.fill(BLACK)
         pg.draw.rect(self.win, WHITE, self.boardRect, BOARD_BORDER_WIDTH)
         self.currTet.draw(self.win)
         pg.display.flip()

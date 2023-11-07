@@ -11,17 +11,17 @@ from SETTINGS import *
 class Tetromino:  # Tetromino class is used to create and control tetrominoes
     blocks: list[vec]
     orgBlocks: list[vec]
-    movement: vec = (0, 0)
     colour: str
-    left: float
+    centre: float
     lastRotation: float
+    centre: vec
 
     def __init__(self, blocks: list[tuple], colour: str, game):  # Sets attributes and initial position
         self.blocks = [vec(0, 0)] + [vec(block[0], block[1]) for block in blocks]
         self.orgBlocks = self.blocks.copy()
         self.colour = colour
         self.game = game
-        self.left = pg.mouse.get_pos()[0]
+        self.centre = vec(BOARD_WIDTH_BLK / 2, 2)
         self.rect = Rect(self)
         self.lastRotation = pg.time.get_ticks()
 
@@ -36,7 +36,7 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         return True
 
     def update(self):  # Changes the position of the block
-        '''# proposed = []
+        """# proposed = []
         now = pg.time.get_ticks()
         keys = pg.key.get_pressed()
 
@@ -47,25 +47,33 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
 
             if (keys[K_RIGHT] or keys[K_d]):
                 self.rotate(1)
-                self.lastRotation = pg.time.get_ticks()'''
+                self.lastRotation = pg.time.get_ticks()"""
 
-        self.left = m.floor(pg.mouse.get_pos()[0] / BLOCK_WIDTH)
+        self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
 
-        if self.rect.left * BLOCK_WIDTH + self.left < BOARD_TOP_LEFT[0]:
-            self.left = BOARD_TOP_LEFT[0] - self.rect.left * BLOCK_WIDTH
+        if self.rect.left < 0:
+            self.centre[0] -= self.rect.left - 1
 
-        if self.rect.right * BLOCK_WIDTH + self.left + BLOCK_WIDTH > BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX:
-            self.left = BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX - self.rect.right * BLOCK_WIDTH - BLOCK_WIDTH
+        if self.rect.right > BOARD_WIDTH_BLK:
+            self.centre[0] += self.rect.right
 
-        self.movement = vec(self.left, 0)
+        newBlocks = []
+        for block in self.orgBlocks:
+            newBlocks.append(block + self.centre)
+
+        self.blocks = newBlocks
+
+
+        self.rect.getRect()
+
 
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''
 
     def draw(self, surf):  # Draws the tetromino on the screen
         for i, block in enumerate(self.blocks):
-            blockRect = pg.Rect((self.left + BLOCK_WIDTH * block[0], BOARD_TOP_LEFT[1] + BLOCK_HEIGHT * (block[1] + 1)),
-                                (BLOCK_WIDTH, BLOCK_HEIGHT))
+            blockRectTopLeft = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
+            blockRect = pg.rect.Rect(blockRectTopLeft, (BLOCK_WIDTH, BLOCK_HEIGHT))
             pg.draw.rect(surf, self.colour, blockRect)
 
 # Subclasses for each individual shape
@@ -113,17 +121,22 @@ class Rect:  # Rect class to tell tetromino where its outermost blocks lie
     right: int
     top: int
     bottom: int
+    tet: Tetromino
 
     def __init__(self, tetromino: Tetromino):  # Sets left, right, top and bottom
-        self.getRect(tetromino)
+        self.tet = tetromino
+        self.getRect()
 
-    def getRect(self, tetromino: Tetromino):
-        self.left, self.right = self.getBlockMaxAndMin(0, tetromino)
-        self.bottom, self.top = self.getBlockMaxAndMin(1, tetromino)
+    def getRect(self):
+        self.left, self.right = self.getBlockMaxAndMin(0)
+        self.bottom, self.top = self.getBlockMaxAndMin(1)
+        print(self.left, self.right)
 
-    def getBlockMaxAndMin(self, dim: int, tetromino: Tetromino) -> tuple:  # Returns the maximum and minimum of each list
-        blockList = [block[dim] for block in tetromino.blocks]
+    def getBlockMaxAndMin(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
+        blockList = [block[dim] for block in self.tet.blocks]
         minimum = min(blockList)
         maximum = max(blockList)
+        if dim == 0:
+            maximum += 1
         return minimum, maximum
 
