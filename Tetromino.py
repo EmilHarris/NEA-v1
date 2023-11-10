@@ -52,16 +52,16 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
 
         if self.rect.left < 0:
-            self.centre[0] -= self.rect.left - 1
+            self.centre[0] = - self.rect.dispLeft
 
-        if self.rect.right > BOARD_WIDTH_BLK:
-            self.centre[0] += self.rect.right
+        if self.rect.right + 1> BOARD_WIDTH_BLK:
+            self.centre[0] = - self.rect.dispRight - 1 + BOARD_WIDTH_BLK
 
         newBlocks = []
         for block in self.orgBlocks:
             newBlocks.append(block + self.centre)
 
-        self.blocks = newBlocks
+        self.blocks = newBlocks.copy()
 
 
         self.rect.getRect()
@@ -71,6 +71,7 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
             self.blocks = proposed'''
 
     def draw(self, surf):  # Draws the tetromino on the screen
+        
         for i, block in enumerate(self.blocks):
             blockRectTopLeft = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
             blockRect = pg.rect.Rect(blockRectTopLeft, (BLOCK_WIDTH, BLOCK_HEIGHT))
@@ -122,6 +123,8 @@ class Rect:  # Rect class to tell tetromino where its outermost blocks lie
     top: int
     bottom: int
     tet: Tetromino
+    dispLeft: int
+    dispRight: int
 
     def __init__(self, tetromino: Tetromino):  # Sets left, right, top and bottom
         self.tet = tetromino
@@ -130,13 +133,18 @@ class Rect:  # Rect class to tell tetromino where its outermost blocks lie
     def getRect(self):
         self.left, self.right = self.getBlockMaxAndMin(0)
         self.bottom, self.top = self.getBlockMaxAndMin(1)
+        self.dispLeft, self.dispRight = self.getXorY(0)
         print(self.left, self.right)
-
     def getBlockMaxAndMin(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
         blockList = [block[dim] for block in self.tet.blocks]
         minimum = min(blockList)
         maximum = max(blockList)
-        if dim == 0:
-            maximum += 1
         return minimum, maximum
 
+
+
+    def getXorY(self, dim: int) -> tuple:
+        blockList = [block[dim] for block in self.tet.orgBlocks]
+        minimum = min(blockList)
+        maximum = max(blockList)
+        return minimum, maximum
