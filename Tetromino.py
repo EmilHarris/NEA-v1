@@ -26,7 +26,12 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
         self.lastRotation = pg.time.get_ticks()
 
     def rotate(self, direction: int):  # Rotates the tetromino, -1 for cw, 1 for anti-cw
-        pass
+        proposed = []
+        for block in self.orgBlocks:
+            block.rotate(90 * direction)
+            proposed.append(block)
+
+        self.orgBlocks = proposed.copy()
 
     def checkBlocks(self, proposed: list[vec]) -> bool:  # Checks if the block can move; returns True or False
         for column in self.game.fullBlocks:
@@ -51,11 +56,21 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
 
         self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
 
+        newBlocks = []
+        for block in self.orgBlocks:
+            newBlocks.append(block + self.centre)
+
+        self.blocks = newBlocks.copy()
+
+        self.rect.getRect()
+
         if self.rect.left < 0:
             self.centre[0] = - self.rect.dispLeft
+            pg.mouse.set_pos(self.centre * BLOCK_WIDTH + BOARD_TOP_LEFT)
 
         if self.rect.right + 1> BOARD_WIDTH_BLK:
             self.centre[0] = - self.rect.dispRight - 1 + BOARD_WIDTH_BLK
+            pg.mouse.set_pos(self.centre * BLOCK_WIDTH + BOARD_TOP_LEFT)
 
         newBlocks = []
         for block in self.orgBlocks:
@@ -63,17 +78,15 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
 
         self.blocks = newBlocks.copy()
 
-
         self.rect.getRect()
-
 
         '''if self.checkBlocks(proposed):
             self.blocks = proposed'''
 
     def draw(self, surf):  # Draws the tetromino on the screen
-        
-        for i, block in enumerate(self.blocks):
-            blockRectTopLeft = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
+
+        for i, block in enumerate(self.orgBlocks):
+            blockRectTopLeft = (BOARD_TOP_LEFT[0] + (block[0] + self.centre.x) * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + (block[1] + self.centre.y) * BLOCK_HEIGHT)
             blockRect = pg.rect.Rect(blockRectTopLeft, (BLOCK_WIDTH, BLOCK_HEIGHT))
             pg.draw.rect(surf, self.colour, blockRect)
 
@@ -136,7 +149,9 @@ class Rect:  # Rect class to tell tetromino where its outermost blocks lie
         self.dispLeft, self.dispRight = self.getXorY(0)
         print(self.left, self.right)
     def getBlockMaxAndMin(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
-        blockList = [block[dim] for block in self.tet.blocks]
+        blockList = []
+        for block in self.tet.blocks:
+            blockList.append(block[dim])
         minimum = min(blockList)
         maximum = max(blockList)
         return minimum, maximum
