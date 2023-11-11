@@ -51,6 +51,13 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
 
         self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
 
+        newBlocks = []
+        for block in self.orgBlocks:
+            newBlocks.append(block + self.centre)
+
+        self.blocks = newBlocks.copy()
+        self.rect.getRect()
+
         if self.rect.left < 0:
             self.centre[0] = - self.rect.dispLeft
 
@@ -62,8 +69,6 @@ class Tetromino:  # Tetromino class is used to create and control tetrominoes
             newBlocks.append(block + self.centre)
 
         self.blocks = newBlocks.copy()
-
-
         self.rect.getRect()
 
 
