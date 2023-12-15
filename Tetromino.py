@@ -15,6 +15,7 @@ class Tetromino:
     centre: float
     lastRotation: float
     centre: vec
+    lastFall: float
 
 # Sets attributes and initial position
     def __init__(self, blocks: list[tuple], colour: str, game):
@@ -25,6 +26,7 @@ class Tetromino:
         self.centre = vec(BOARD_WIDTH_BLK / 2, 2)
         self.rect = Rect(self)
         self.lastRotation = pg.time.get_ticks()
+        self.lastFall = pg.time.get_ticks()
 
 # Rotates the tetromino, -1 for cw, 1 for anti-cw
     def rotate(self, direction: int):
@@ -50,19 +52,14 @@ class Tetromino:
 
 # Responds to inputs
     def update(self):
-        now = pg.time.get_ticks()
-        keys = pg.key.get_pressed()
 
-        # Respond to rotation inputs
-        if now - self.lastRotation > ROT_TIME:
-            if (keys[K_LEFT] or keys[K_a]):
-                self.rotate(-1)
-                self.lastRotation = pg.time.get_ticks()
+        self.checkRotate()
 
-            if (keys[K_RIGHT] or keys[K_d]):
-                self.rotate(1)
-                self.lastRotation = pg.time.get_ticks()
+        self.followMouse()
 
+        self.moveDown()
+
+    def followMouse(self):
         # Move tetromino's centre to mouse location
         self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
 
@@ -78,7 +75,7 @@ class Tetromino:
         if self.rect.left < 0:
             self.centre[0] = - self.rect.dispLeft
 
-        if self.rect.right + 1> BOARD_WIDTH_BLK:
+        if self.rect.right + 1 > BOARD_WIDTH_BLK:
             self.centre[0] = - self.rect.dispRight - 1 + BOARD_WIDTH_BLK
 
         newBlocks = []
@@ -88,7 +85,30 @@ class Tetromino:
         self.blocks = newBlocks.copy()
         self.rect.getRect()
 
-# Draws the tetromino on the screen
+    def checkRotate(self):
+        now = pg.time.get_ticks()
+        keys = pg.key.get_pressed()
+
+        # Respond to rotation inputs
+        if now - self.lastRotation > ROT_TIME:
+            if (keys[K_LEFT] or keys[K_a]):
+                self.rotate(-1)
+                self.lastRotation = pg.time.get_ticks()
+
+            if (keys[K_RIGHT] or keys[K_d]):
+                self.rotate(1)
+                self.lastRotation = pg.time.get_ticks()
+
+    def moveDown(self):
+        now = pg.time.get_ticks()
+        if now - self.lastFall > FALL_TIME:
+            self.centre.y += 1
+            for i, block in enumerate(self.blocks):
+                self.blocks[i] = block + vec(0, 1)
+            self.lastFall = pg.time.get_ticks()
+            self.rect.getRect()
+
+    # Draws the tetromino on the screen
     def draw(self, surf):
         for i, block in enumerate(self.blocks):
             blockRectTopLeft = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
