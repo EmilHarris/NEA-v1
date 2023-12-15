@@ -3,8 +3,7 @@
 import pygame as pg
 import math as m
 from pygame import Vector2 as vec
-from pygame.locals import K_RIGHT, K_d, K_LEFT, K_a
-from pygame.key import *
+from pygame.locals import *
 from SETTINGS import *
 
 

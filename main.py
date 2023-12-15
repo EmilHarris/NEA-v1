@@ -1,10 +1,6 @@
 # Imports
 
-import pygame as pg
-from pygame.locals import *
-from pygame import Vector2 as vec
 from Tetromino import *
-from SETTINGS import *
 import sys
 
 
