@@ -7,6 +7,7 @@ from Tetromino import *
 from game import *
 from SETTINGS import *
 from game import *
+import sys
 
 # Start pygame and set up window and clock
 pg.init()
@@ -31,10 +32,9 @@ while running:
     pg.draw.rect(win, WHITE, game.boardRect, BOARD_BORDER_WIDTH)
     j.draw(win)
 
-<<<<<<< Updated upstream
     pg.display.flip()
     game.dt = clock.tick(FPS) / 1000
-=======
+
     def startGame(self, mode=0):
         pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         pg.mouse.set_visible(False)
@@ -84,7 +84,6 @@ while running:
 
 game = Game()
 game.startGame()
->>>>>>> Stashed changes
 
 
 
