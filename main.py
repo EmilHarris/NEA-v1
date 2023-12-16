@@ -1,7 +1,7 @@
 # Imports
 
 from Tetromino import *
-import sys
+import sys, random
 
 
 # Game class for controlling the program
@@ -33,10 +33,10 @@ class Game:
     def startGame(self, mode=0):
         pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         pg.mouse.set_visible(False)
-        self.fullBlocks = [vec(x, -BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
+        self.fullBlocks = [vec(x, BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
         self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
                                  (BOARD_WIDTH_PIX + 2 * BOARD_BORDER_WIDTH, BOARD_HEIGHT_PIX + 2 * BOARD_BORDER_WIDTH))
-        self.currTet = T(self)
+        self.currTet = random.choice(self.tetrominoes)(self)
         self.main()
 
     # Main game loop which controls all other events

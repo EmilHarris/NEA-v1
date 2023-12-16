@@ -36,18 +36,34 @@ class Tetromino:
         for i, block in enumerate(self.orgBlocks):
             proposed[i] = block.rotate(90 * direction)
 
+        newBlocks = []
+        for block in proposed:
+            newBlocks.append(block + self.centre)
+
         self.orgBlocks = proposed
 
         # Move the rotated blocks to the relative position of the tetromino
-        self.blocks = [block - vec(BOARD_WIDTH_BLK / 2, 2) for block in proposed]
+        self.blocks = newBlocks.copy()
         self.rect.getRect()
+
+        while not self.checkBlocks(self.blocks):
+
+            self.centre.y -= self.rect.dispDown
+            newBlocks = []
+            for block in self.orgBlocks:
+                newBlocks.append(block + self.centre)
+
+            self.blocks = newBlocks.copy()
+            self.rect.getRect()
+
+
+
 
 # Checks if the block can move; returns True or False
     def checkBlocks(self, proposed: list[vec]) -> bool:
-        for column in self.game.fullBlocks:
-            for block in column:
-                if block in proposed:
-                    return False
+        for block in proposed:
+            if block in self.game.fullBlocks:
+                return False
         return True
 
 # Responds to inputs
@@ -101,12 +117,16 @@ class Tetromino:
 
     def moveDown(self):
         now = pg.time.get_ticks()
+        proposed = [0, 0, 0, 0]
         if now - self.lastFall > FALL_TIME:
-            self.centre.y += 1
             for i, block in enumerate(self.blocks):
-                self.blocks[i] = block + vec(0, 1)
-            self.lastFall = pg.time.get_ticks()
-            self.rect.getRect()
+                proposed[i] = block + vec(0, 1)
+
+            if self.checkBlocks(proposed):
+                self.blocks = proposed.copy()
+                self.lastFall = pg.time.get_ticks()
+                self.rect.getRect()
+                self.centre.y += 1
 
     # Draws the tetromino on the screen
     def draw(self, surf):
@@ -164,6 +184,7 @@ class Rect:
     tet: Tetromino
     dispLeft: int
     dispRight: int
+    dispDown: int
 
 # Sets left, right, top and bottom
     def __init__(self, tetromino: Tetromino):
@@ -175,6 +196,7 @@ class Rect:
         self.left, self.right = self.getBlockMaxAndMin(0)
         self.bottom, self.top = self.getBlockMaxAndMin(1)
         self.dispLeft, self.dispRight = self.getXorY(0)
+        self.dispDown = self.getXorY(1)[1]
 
 # Used by getRect to find edges
     def getBlockMaxAndMin(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
