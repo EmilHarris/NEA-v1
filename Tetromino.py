@@ -17,7 +17,7 @@ class Tetromino:
     centre: vec
     lastFall: float
 
-# Sets attributes and initial position
+    # Sets attributes and initial position
     def __init__(self, blocks: list[tuple], colour: str, game):
         self.blocks = [vec(0, 0)] + [vec(block[0], block[1]) for block in blocks]
         self.orgBlocks = self.blocks.copy()
@@ -28,7 +28,7 @@ class Tetromino:
         self.lastRotation = pg.time.get_ticks()
         self.lastFall = pg.time.get_ticks()
 
-# Rotates the tetromino, -1 for cw, 1 for anti-cw
+    # Rotates the tetromino, -1 for cw, 1 for anti-cw
     def rotate(self, direction: int):
         proposed = [0, 0, 0, 0]
 
@@ -59,14 +59,14 @@ class Tetromino:
 
 
 
-# Checks if the block can move; returns True or False
+    # Checks if the block can move; returns True or False
     def checkBlocks(self, proposed: list[vec]) -> bool:
         for block in proposed:
             if block in self.game.fullBlocks:
                 return False
         return True
 
-# Responds to inputs
+    # Responds to inputs
     def update(self):
 
         self.checkRotate()
@@ -75,6 +75,7 @@ class Tetromino:
 
         self.moveDown()
 
+    # Makes the tetromino move to the location of the mouse
     def followMouse(self):
         # Move tetromino's centre to mouse location
         self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
@@ -94,6 +95,7 @@ class Tetromino:
         if self.rect.right + 1 > BOARD_WIDTH_BLK:
             self.centre[0] = - self.rect.dispRight - 1 + BOARD_WIDTH_BLK
 
+        # Update all block attributes
         newBlocks = []
         for block in self.orgBlocks:
             newBlocks.append(block + self.centre)
@@ -101,6 +103,7 @@ class Tetromino:
         self.blocks = newBlocks.copy()
         self.rect.getRect()
 
+    # Check for and respond to rotation inputs
     def checkRotate(self):
         now = pg.time.get_ticks()
         keys = pg.key.get_pressed()
@@ -115,13 +118,17 @@ class Tetromino:
                 self.rotate(1)
                 self.lastRotation = pg.time.get_ticks()
 
+    # Moves the block down by one
     def moveDown(self):
         now = pg.time.get_ticks()
         proposed = [0, 0, 0, 0]
+
+        # Checks it has been long enough
         if now - self.lastFall > FALL_TIME:
             for i, block in enumerate(self.blocks):
                 proposed[i] = block + vec(0, 1)
 
+            # Update attributes
             if self.checkBlocks(proposed):
                 self.blocks = proposed.copy()
                 self.lastFall = pg.time.get_ticks()
