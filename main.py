@@ -1,6 +1,7 @@
 # Imports
 
 from Tetromino import *
+from menu import *
 import sys, random
 
 
@@ -12,6 +13,7 @@ class Game:
     dt: float
     currTet: Tetromino
     running: bool
+    menu: Menu
 
     # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
     def __init__(self):
@@ -27,7 +29,18 @@ class Game:
             self.fullBlocks.append(block)
 
     def menu(self):
-        pass
+        self.menu = Menu()
+
+        # Create play button
+        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.startGame)
+
+        while True:
+            self.win.fill(BLACK)
+            events = self.getEvents()
+
+            self.menu.update(events['mouse_up'], self.win)
+
+            pg.display.flip()
 
     # Starts a new game
     def startGame(self, mode=0):
@@ -49,7 +62,9 @@ class Game:
             self.draw()
 
     # Gets and responds to all pygame events
-    def getEvents(self):
+    def getEvents(self) -> dict:
+        events = {'mouse_up': False}
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.quit()
@@ -58,6 +73,16 @@ class Game:
                 keys = pg.key.get_pressed()
                 if keys[K_ESCAPE]:
                     self.quit()
+
+            if event.type == MOUSEBUTTONUP:
+                events['mouse_up'] = True
+                print('clicked')
+
+        return events
+
+
+
+
 
     # Quitting sequence when game ends
     def quit(self):
@@ -89,7 +114,7 @@ class Game:
 
 # Creates a game and starts it
 game = Game()
-game.startGame()
+game.menu()
 
 
 
