@@ -36,14 +36,14 @@ class Tetromino:
         for i, block in enumerate(self.orgBlocks):
             proposed[i] = block.rotate(90 * direction)
 
-        newBlocks = []
+        new_blocks = []
         for block in proposed:
-            newBlocks.append(block + self.centre)
+            new_blocks.append(block + self.centre)
 
         self.orgBlocks = proposed
 
         # Move the rotated blocks to the relative position of the tetromino
-        self.blocks = newBlocks.copy()
+        self.blocks = new_blocks.copy()
         self.rect.getRect()
 
         while not self.checkBlocks(self.blocks):
@@ -77,31 +77,26 @@ class Tetromino:
 
     # Makes the tetromino move to the location of the mouse
     def followMouse(self):
-        # Move tetromino's centre to mouse location
-        self.centre.x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
+        proposed_centre_x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
+        movement = int(proposed_centre_x - self.centre.x)
+        movement, sign = mag_and_sign(movement)
 
-        # Update blocks relative to centre
-        newBlocks = []
-        for block in self.orgBlocks:
-            newBlocks.append(block + self.centre)
+        for i in range(movement):
+            self.centre.x += sign
 
-        self.blocks = newBlocks.copy()
-        self.rect.getRect()
+            newBLocks = []
+            for block in self.orgBlocks:
+                newBLocks.append(block + self.centre)
 
-        # Check new position isnt outside board
-        if self.rect.left < 0:
-            self.centre[0] = - self.rect.dispLeft
+            print(newBLocks)
+            print(self.game.fullBlocks)
 
-        if self.rect.right + 1 > BOARD_WIDTH_BLK:
-            self.centre[0] = - self.rect.dispRight - 1 + BOARD_WIDTH_BLK
+            if self.checkBlocks(newBLocks):
+                self.updateBlocks()
 
-        # Update all block attributes
-        newBlocks = []
-        for block in self.orgBlocks:
-            newBlocks.append(block + self.centre)
-
-        self.blocks = newBlocks.copy()
-        self.rect.getRect()
+            else:
+                self.centre.x -= 1
+                print('yes')
 
     # Check for and respond to rotation inputs
     def checkRotate(self):
@@ -117,6 +112,22 @@ class Tetromino:
             if (keys[K_RIGHT] or keys[K_d]):
                 self.rotate(1)
                 self.lastRotation = pg.time.get_ticks()
+
+    def updateBlocks(self):
+        newBlocks = []
+        for block in self.orgBlocks:
+            newBlocks.append(block + self.centre)
+
+        self.blocks = newBlocks.copy()
+        self.rect.getRect()
+
+        if self.rect.left < 0:
+            self.centre.x = -self.rect.dispLeft
+            self.updateBlocks()
+
+        if self.rect.right >= BOARD_WIDTH_BLK:
+            self.centre.x = BOARD_WIDTH_BLK - 1 - self.rect.dispRight
+            self.updateBlocks()
 
     # Moves the block down by one
     def moveDown(self):
@@ -134,6 +145,12 @@ class Tetromino:
                 self.lastFall = pg.time.get_ticks()
                 self.rect.getRect()
                 self.centre.y += 1
+
+            else:
+                self.stop()
+
+    def stop(self):
+        self.game.addFullBlocks(self)
 
     # Draws the tetromino on the screen
     def draw(self, surf):
@@ -219,3 +236,9 @@ class Rect:
         minimum = min(blockList)
         maximum = max(blockList)
         return minimum, maximum
+
+def mag_and_sign(n):
+    if n == 0:
+        return 0, 0
+    mag = m.sqrt(n**2)
+    return int(mag), int(mag/n)

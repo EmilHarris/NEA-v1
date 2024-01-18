@@ -2,7 +2,7 @@
 
 from Tetromino import *
 from menu import *
-import sys, random
+import sys, random, os
 
 
 # Game class for controlling the program
@@ -28,11 +28,15 @@ class Game:
         for block in tetromino.blocks:
             self.fullBlocks.append(block)
 
+        self.currTet = random.choice(self.tetrominoes)(self)
+
     def menu(self):
         self.menu = Menu()
 
         # Create play button
-        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.startGame)
+        cwd = os.getcwd()
+        print(cwd)
+        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.startGame, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
 
         while True:
             self.win.fill(BLACK)
@@ -44,7 +48,7 @@ class Game:
 
     # Starts a new game
     def startGame(self, mode=0):
-        pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        #pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
         pg.mouse.set_visible(False)
         self.fullBlocks = [vec(x, BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
         self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
@@ -66,17 +70,16 @@ class Game:
         events = {'mouse_up': False}
 
         for event in pg.event.get():
-            if event.type == pg.QUIT:
+            if event.type == QUIT:
                 self.quit()
 
-            if event.type == pg.KEYDOWN:
+            if event.type == KEYDOWN:
                 keys = pg.key.get_pressed()
                 if keys[K_ESCAPE]:
                     self.quit()
 
             if event.type == MOUSEBUTTONUP:
                 events['mouse_up'] = True
-                print('clicked')
 
         return events
 
@@ -100,6 +103,11 @@ class Game:
         # Draw board and tetromino
         pg.draw.rect(self.win, WHITE, self.boardRect, BOARD_BORDER_WIDTH)
         self.currTet.draw(self.win)
+
+        for i, block in enumerate(self.fullBlocks):
+            blockRectTopLeft = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
+            blockRect = pg.rect.Rect(blockRectTopLeft, (BLOCK_WIDTH, BLOCK_HEIGHT))
+            pg.draw.rect(self.win, WHITE, blockRect)
 
         # Drawing grid lines
         for i in range(BOARD_WIDTH_BLK):
