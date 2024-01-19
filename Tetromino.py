@@ -25,6 +25,7 @@ class Tetromino:
         self.game = game
         self.centre = vec(BOARD_WIDTH_BLK / 2, 2)
         self.rect = Rect(self)
+        self.updateBlocks()
         self.lastRotation = pg.time.get_ticks()
         self.lastFall = pg.time.get_ticks()
 
@@ -84,19 +85,12 @@ class Tetromino:
         for i in range(movement):
             self.centre.x += sign
 
-            newBLocks = []
-            for block in self.orgBlocks:
-                newBLocks.append(block + self.centre)
+            self.updateBlocks()
 
-            print(newBLocks)
-            print(self.game.fullBlocks)
-
-            if self.checkBlocks(newBLocks):
+            if not self.checkBlocks(self.blocks):
+                self.centre.x -= sign
                 self.updateBlocks()
-
-            else:
-                self.centre.x -= 1
-                print('yes')
+                break
 
     # Check for and respond to rotation inputs
     def checkRotate(self):
