@@ -9,6 +9,7 @@ import sys, random, os
 class Game:
     tetrominoes: list
     fullBlocks: list[vec]
+    floorBlocks: list[vec]
     boardRect: pg.Rect
     dt: float
     currTet: Tetromino
@@ -24,15 +25,47 @@ class Game:
         self.tetrominoes = [L, S, Z, I, T, O, J]
 
     # When a block stops, it will be added to the fullBlocks array with this function
-    def addFullBlocks(self, tetromino):
+    def add_full_blocks(self, tetromino):
         for block in tetromino.blocks:
             self.fullBlocks.append(block)
 
         self.currTet = random.choice(self.tetrominoes)(self)
         pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-        print()
-        print()
-        print('NEW_BLOCK')
+        self.clear_lines(self.check_full_line())
+
+    def check_full_line(self):
+        lines = {}
+        for block in self.fullBlocks:
+            if block[1] in lines:
+                lines[block[1]] += 1
+
+            else:
+                lines[block[1]] = 1
+
+        print(lines)
+
+        full_lines = []
+        for line in lines:
+            if lines[line] >= 10:
+                full_lines.append(int(line))
+
+        return full_lines
+
+    def clear_lines(self, lines: list):
+        lines.sort()
+        temp_blocks = self.fullBlocks.copy()
+        no_of_removed = 0
+
+        for line in lines:
+            for i, block in enumerate(self.fullBlocks):
+                if block[1] == line:
+                    temp_blocks.remove(block)
+                    no_of_removed += 1
+
+                elif block[1] < line:
+                    temp_blocks[i - no_of_removed] = block + vec(0, 1)
+
+            self.fullBlocks = temp_blocks.copy()
 
     def menu(self):
         self.menu = Menu()
@@ -40,21 +73,22 @@ class Game:
         # Create play button
         cwd = os.getcwd()
         print(cwd)
-        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.startGame, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
+        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.start_game, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
 
         while True:
             self.win.fill(BLACK)
-            events = self.getEvents()
+            events = self.get_events()
 
             self.menu.update(events['mouse_up'], self.win)
 
             pg.display.flip()
 
     # Starts a new game
-    def startGame(self, mode=0):
+    def start_game(self, mode=0):
         pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-        #pg.mouse.set_visible(False)
-        self.fullBlocks = [vec(x, BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
+        pg.mouse.set_visible(False)
+        self.floorBlocks = [vec(x, BOARD_HEIGHT_BLK) for x in range(BOARD_WIDTH_BLK)]
+        self.fullBlocks = []
         self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
                                  (BOARD_WIDTH_PIX + 2 * BOARD_BORDER_WIDTH, BOARD_HEIGHT_PIX + 2 * BOARD_BORDER_WIDTH))
         self.currTet = random.choice(self.tetrominoes)(self)
@@ -65,12 +99,12 @@ class Game:
         self.running = True
         while self.running:
             self.dt = self.clock.tick(FPS) / 1000
-            self.getEvents()
+            self.get_events()
             self.update()
             self.draw()
 
     # Gets and responds to all pygame events
-    def getEvents(self) -> dict:
+    def get_events(self) -> dict:
         events = {'mouse_up': False}
 
         for event in pg.event.get():
@@ -86,10 +120,6 @@ class Game:
                 events['mouse_up'] = True
 
         return events
-
-
-
-
 
     # Quitting sequence when game ends
     def quit(self):

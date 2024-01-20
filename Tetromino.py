@@ -25,7 +25,7 @@ class Tetromino:
         self.game = game
         self.centre = vec(BOARD_WIDTH_BLK / 2, 2)
         self.rect = Rect(self)
-        self.updateBlocks()
+        self.update_blocks()
         self.lastRotation = pg.time.get_ticks()
         self.lastFall = pg.time.get_ticks()
 
@@ -45,9 +45,9 @@ class Tetromino:
 
         # Move the rotated blocks to the relative position of the tetromino
         self.blocks = new_blocks.copy()
-        self.rect.getRect()
+        self.rect.get_rect()
 
-        while not self.checkBlocks(self.blocks):
+        while not self.check_blocks(self.blocks):
 
             self.centre.y -= self.rect.dispDown
             newBlocks = []
@@ -55,29 +55,30 @@ class Tetromino:
                 newBlocks.append(block + self.centre)
 
             self.blocks = newBlocks.copy()
-            self.rect.getRect()
+            self.rect.get_rect()
 
 
 
 
     # Checks if the block can move; returns True or False
-    def checkBlocks(self, proposed: list[vec]) -> bool:
+    def check_blocks(self, proposed: list[vec]) -> bool:
         for block in proposed:
-            if block in self.game.fullBlocks:
+            if block in self.game.floorBlocks or block in self.game.fullBlocks:
                 return False
         return True
+
 
     # Responds to inputs
     def update(self):
 
-        self.checkRotate()
+        self.check_rotate()
 
-        self.followMouse()
+        self.follow_mouse()
 
-        self.moveDown()
+        self.move_down()
 
     # Makes the tetromino move to the location of the mouse
-    def followMouse(self):
+    def follow_mouse(self):
         proposed_centre_x = m.floor((pg.mouse.get_pos()[0] - BOARD_TOP_LEFT[0]) / BLOCK_WIDTH)
         movement = int(proposed_centre_x - self.centre.x)
         movement, sign = mag_and_sign(movement)
@@ -85,15 +86,15 @@ class Tetromino:
         for i in range(movement):
             self.centre.x += sign
 
-            self.updateBlocks()
+            self.update_blocks()
 
-            if not self.checkBlocks(self.blocks):
+            if not self.check_blocks(self.blocks):
                 self.centre.x -= sign
-                self.updateBlocks()
+                self.update_blocks()
                 break
 
     # Check for and respond to rotation inputs
-    def checkRotate(self):
+    def check_rotate(self):
         now = pg.time.get_ticks()
         keys = pg.key.get_pressed()
 
@@ -107,24 +108,24 @@ class Tetromino:
                 self.rotate(1)
                 self.lastRotation = pg.time.get_ticks()
 
-    def updateBlocks(self):
+    def update_blocks(self):
         newBlocks = []
         for block in self.orgBlocks:
             newBlocks.append(block + self.centre)
 
         self.blocks = newBlocks.copy()
-        self.rect.getRect()
+        self.rect.get_rect()
 
         if self.rect.left < 0:
             self.centre.x = -self.rect.dispLeft
-            self.updateBlocks()
+            self.update_blocks()
 
         if self.rect.right >= BOARD_WIDTH_BLK:
             self.centre.x = BOARD_WIDTH_BLK - 1 - self.rect.dispRight
-            self.updateBlocks()
+            self.update_blocks()
 
     # Moves the block down by one
-    def moveDown(self):
+    def move_down(self):
         now = pg.time.get_ticks()
         proposed = [0, 0, 0, 0]
 
@@ -134,17 +135,17 @@ class Tetromino:
                 proposed[i] = block + vec(0, 1)
 
             # Update attributes
-            if self.checkBlocks(proposed):
+            if self.check_blocks(proposed):
                 self.blocks = proposed.copy()
                 self.lastFall = pg.time.get_ticks()
-                self.rect.getRect()
+                self.rect.get_rect()
                 self.centre.y += 1
 
             else:
                 self.stop()
 
     def stop(self):
-        self.game.addFullBlocks(self)
+        self.game.add_full_blocks(self)
 
     # Draws the tetromino on the screen
     def draw(self, surf):
@@ -207,17 +208,17 @@ class Rect:
 # Sets left, right, top and bottom
     def __init__(self, tetromino: Tetromino):
         self.tet = tetromino
-        self.getRect()
+        self.get_rect()
 
 # Called everytime position of tetromino is updated to fid out where sides are
-    def getRect(self):
-        self.left, self.right = self.getBlockMaxAndMin(0)
-        self.bottom, self.top = self.getBlockMaxAndMin(1)
-        self.dispLeft, self.dispRight = self.getXorY(0)
-        self.dispDown = self.getXorY(1)[1]
+    def get_rect(self):
+        self.left, self.right = self.get_block_max_and_min(0)
+        self.bottom, self.top = self.get_block_max_and_min(1)
+        self.dispLeft, self.dispRight = self.get_x_or_y(0)
+        self.dispDown = self.get_x_or_y(1)[1]
 
 # Used by getRect to find edges
-    def getBlockMaxAndMin(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
+    def get_block_max_and_min(self, dim: int) -> tuple:  # Returns the maximum and minimum of each list
         blockList = [block[dim] for block in self.tet.blocks]
         minimum = min(blockList)
         maximum = max(blockList)
@@ -225,11 +226,12 @@ class Rect:
 
 
 
-    def getXorY(self, dim: int) -> tuple:
+    def get_x_or_y(self, dim: int) -> tuple:
         blockList = [block[dim] for block in self.tet.orgBlocks]
         minimum = min(blockList)
         maximum = max(blockList)
         return minimum, maximum
+
 
 def mag_and_sign(n):
     if n == 0:
