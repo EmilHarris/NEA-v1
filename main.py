@@ -27,14 +27,19 @@ class Game:
     # When a block stops, it will be added to the fullBlocks array with this function
     def add_full_blocks(self, tetromino):
         for block in tetromino.blocks:
-            self.fullBlocks.append(block)
+            self.fullBlocks.append(vec(int(block.x), int(block.y)))
 
         self.currTet = random.choice(self.tetrominoes)(self)
         pg.mouse.set_pos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+        print('before')
+        print(self.fullBlocks)
+        print()
         self.clear_lines(self.check_full_line())
 
     def check_full_line(self):
+        full_lines = []
         lines = {}
+
         for block in self.fullBlocks:
             if block[1] in lines:
                 lines[block[1]] += 1
@@ -42,30 +47,35 @@ class Game:
             else:
                 lines[block[1]] = 1
 
-        print(lines)
-
-        full_lines = []
         for line in lines:
-            if lines[line] >= 10:
-                full_lines.append(int(line))
+            if lines[line] == 10:
+                full_lines.append(line)
 
         return full_lines
 
     def clear_lines(self, lines: list):
         lines.sort()
-        temp_blocks = self.fullBlocks.copy()
-        no_of_removed = 0
+        lines = [round(line) for line in lines]
+        no_of_lines = len(lines)
 
-        for line in lines:
-            for i, block in enumerate(self.fullBlocks):
-                if block[1] == line:
-                    temp_blocks.remove(block)
-                    no_of_removed += 1
+        try:
+            top_line = min(lines)
+            bottom_line = max(lines)
 
-                elif block[1] < line:
-                    temp_blocks[i - no_of_removed] = block + vec(0, 1)
+        except ValueError:
+            return
 
-            self.fullBlocks = temp_blocks.copy()
+        move_down = []
+        keep = []
+
+        for block in self.fullBlocks:
+            if block[1] < top_line:
+                move_down.append(block + (0, no_of_lines))
+
+            elif block[1] > bottom_line:
+                keep.append(block)
+
+        self.fullBlocks = keep + move_down
 
     def menu(self):
         self.menu = Menu()

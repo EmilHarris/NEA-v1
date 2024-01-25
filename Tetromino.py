@@ -63,8 +63,9 @@ class Tetromino:
     # Checks if the block can move; returns True or False
     def check_blocks(self, proposed: list[vec]) -> bool:
         for block in proposed:
-            if block in self.game.floorBlocks or block in self.game.fullBlocks:
+            if block in self.game.fullBlocks or block in self.game.floorBlocks:
                 return False
+
         return True
 
 
