@@ -23,11 +23,13 @@ class Tetromino:
         self.orgBlocks = self.blocks.copy()
         self.colour = colour
         self.game = game
-        self.centre = vec(BOARD_WIDTH_BLK / 2, 2)
+        self.centre = vec(BOARD_WIDTH_BLK / 2, 0)
         self.rect = Rect(self)
         self.update_blocks()
         self.lastRotation = pg.time.get_ticks()
         self.lastFall = pg.time.get_ticks()
+        if not self.check_blocks(self.blocks):
+            self.game.game_over()
 
     # Rotates the tetromino, -1 for cw, 1 for anti-cw
     def rotate(self, direction: int):
@@ -47,8 +49,11 @@ class Tetromino:
         self.blocks = new_blocks.copy()
         self.rect.get_rect()
 
+        if not self.check_blocks(self.blocks, axis=self.game.full_blocks):
+            self.rotate(-direction)
+
         # makes sure block is not in floor
-        while not self.check_blocks(self.blocks):
+        if not self.check_blocks(self.blocks, axis=self.game.floorBlocks):
 
             self.centre.y -= self.rect.dispDown
             new_blocks = []
@@ -68,10 +73,25 @@ class Tetromino:
             self.update_blocks()
 
     # Checks if the block can move; returns True or False
-    def check_blocks(self, proposed: list[vec]) -> bool:
-        for block in proposed:
-            if block in self.game.full_blocks or block in self.game.floorBlocks:
-                return False
+    def check_blocks(self, proposed: list[vec], axis = None) -> bool:
+        if axis == self.game.floorBlocks:
+            for block in proposed:
+                if block in self.game.floorBlocks:
+                   return False
+
+        elif axis == self.game.full_blocks:
+            for block in axis:
+                if block[0] in proposed:
+                    return False
+
+        else:
+            for block in proposed:
+                if block in self.game.floorBlocks:
+                    return False
+
+            for block in self.game.full_blocks:
+                if block[0] in proposed:
+                    return False
 
         return True
 
@@ -158,7 +178,23 @@ class Tetromino:
         self.game.add_full_blocks(self)
 
     # Draws the tetromino on the screen
-    def draw(self, surf):
+    def draw(self, surf, mode='current'):
+        if mode == 'next':
+            for i, block in enumerate(self.blocks):
+                block_rect_top_left = (SCREEN_WIDTH - 150 + (block[0] * BLOCK_WIDTH / 2), 190 + (block[1] * BLOCK_WIDTH / 2))
+                block_rect = pg.rect.Rect(block_rect_top_left, (BLOCK_WIDTH / 2, BLOCK_HEIGHT / 2))
+                pg.draw.rect(surf, self.colour, block_rect)
+
+            return
+
+        elif mode == 'hold':
+            for i, block in enumerate(self.blocks):
+                block_rect_top_left = ((block[0] * BLOCK_WIDTH / 2), 190 + (block[1] * BLOCK_WIDTH / 2))
+                block_rect = pg.rect.Rect(block_rect_top_left, (BLOCK_WIDTH / 2, BLOCK_HEIGHT / 2))
+                pg.draw.rect(surf, self.colour, block_rect)
+
+            return
+
         for i, block in enumerate(self.blocks):
             block_rect_top_left = (BOARD_TOP_LEFT[0] + block[0] * BLOCK_WIDTH, BOARD_TOP_LEFT[1] + block[1] * BLOCK_HEIGHT)
             block_rect = pg.rect.Rect(block_rect_top_left, (BLOCK_WIDTH, BLOCK_HEIGHT))

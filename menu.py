@@ -65,7 +65,7 @@ class Button:
         self.img_active = self.img_reg
         return False
 
-    # Chages appearence when mouse is over button
+    # Changes appearance when mouse is over button
     def on_hover(self):
         self.img_active = self.img_int
 
