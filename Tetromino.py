@@ -5,6 +5,7 @@ import math as m
 from pygame import Vector2 as vec
 from pygame.locals import *
 from SETTINGS import *
+from menu import *
 
 
 # Tetromino class is used to create and control tetrominoes
@@ -16,6 +17,7 @@ class Tetromino:
     lastRotation: float
     centre: vec
     lastFall: float
+    fall_time: int | float = 0
 
     # Sets attributes and initial position
     def __init__(self, blocks: list[tuple], colour: str, game):
@@ -29,7 +31,8 @@ class Tetromino:
         self.lastRotation = pg.time.get_ticks()
         self.lastFall = pg.time.get_ticks()
         if not self.check_blocks(self.blocks):
-            self.game.game_over()
+            pg.mouse.set_visible(True)
+            self.game.menu()
 
     # Rotates the tetromino, -1 for cw, 1 for anti-cw
     def rotate(self, direction: int):
@@ -97,12 +100,18 @@ class Tetromino:
 
     # Responds to inputs
     def update(self):
+        keys = pg.key.get_pressed()
+
+        if keys[K_s] or keys[K_DOWN]:
+            self.fall_time = FAST_FALL_TIME
 
         self.check_rotate()
 
         self.follow_mouse()
 
         self.move_down()
+
+        self.fall_time = FALL_TIME * (m.exp(0.25 * (1 - self.game.level)))
 
     # Makes the tetromino move to the location of the mouse
     def follow_mouse(self):
@@ -159,7 +168,7 @@ class Tetromino:
         proposed = [0, 0, 0, 0]
 
         # Checks it has been long enough
-        if now - self.lastFall > FALL_TIME:
+        if now - self.lastFall > self.fall_time:
             for i, block in enumerate(self.blocks):
                 proposed[i] = block + vec(0, 1)
 
@@ -172,6 +181,20 @@ class Tetromino:
 
             else:
                 self.stop()
+
+    def hard_drop(self):
+        for i in range(20):
+            self.centre.y += 1
+
+            self.update_blocks()
+
+            if not self.check_blocks(self.blocks):
+                self.centre.y -= 1
+                self.update_blocks()
+                break
+
+    def fast_fall(self):
+        self.fall_time = FAST_FALL_TIME
 
     # Stops the block when it hits the floor
     def stop(self):

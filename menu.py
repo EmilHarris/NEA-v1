@@ -3,7 +3,6 @@
 import pygame as pg
 from SETTINGS import *
 
-
 # Menu class creates a menu before game starts
 class Menu:
     buttons: list

@@ -15,11 +15,12 @@ class Game:
     currTet: Tetromino
     nextTet: Tetromino
     running: bool
-    menu: Menu
+    MENU: Menu
     score: int
     level: int
     holdTet: Tetromino
     held_this_turn: bool = False
+    lines_cleared: int = 0
 
     # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
     def __init__(self):
@@ -78,13 +79,6 @@ class Game:
         except ValueError:
             return
 
-        print(lines)
-        print(no_of_lines)
-        print()
-        print('before')
-        print(self.full_blocks)
-        print()
-
         move_down = []
         keep = []
 
@@ -108,10 +102,6 @@ class Game:
         # Combine these and update full_blocks
         self.full_blocks = keep + move_down
 
-        print('after')
-        print(self.full_blocks)
-        print()
-
         if no_of_lines == 1:
             self.score += 40 * self.level
 
@@ -124,21 +114,23 @@ class Game:
         elif no_of_lines == 4:
             self.score += 1200 * self.level
 
-        print(self.score)
+        self.lines_cleared += no_of_lines
+
+        self.level = (self.lines_cleared // 10) + 1
 
     # Starts the menu including necessary buttons and runs a loop
     def menu(self):
-        self.menu = Menu()
+        self.MENU = Menu()
 
         # Create play button
         cwd = os.getcwd()
-        self.menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.start_game, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
+        self.MENU.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.start_game, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
 
         while True:
             self.win.fill(BLACK)
             events = self.get_events()
 
-            self.menu.update(events['mouse_up'], self.win)
+            self.MENU.update(events['mouse_up'], self.win)
 
             pg.display.flip()
 
@@ -150,11 +142,11 @@ class Game:
         self.full_blocks = []
         self.boardRect = pg.Rect((BOARD_TOP_LEFT[0] - BOARD_BORDER_WIDTH, BOARD_TOP_LEFT[1] - BOARD_BORDER_WIDTH),
                                  (BOARD_WIDTH_PIX + 2 * BOARD_BORDER_WIDTH, BOARD_HEIGHT_PIX + 2 * BOARD_BORDER_WIDTH))
+        self.level = 1
         self.currTet = random.choice(self.tetrominoes)(self)
         self.nextTet = random.choice(self.tetrominoes)(self)
         self.holdTet = None
         self.score = 0
-        self.level = 1
 
         self.main()
 
@@ -180,8 +172,11 @@ class Game:
                 if keys[K_ESCAPE]:
                     self.pause()
 
-                if keys[K_w]:
+                if keys[K_w] or keys[K_UP]:
                     self.hold_tet()
+
+                if keys[K_SPACE]:
+                    self.currTet.hard_drop()
 
             if event.type == MOUSEBUTTONUP:
                 events['mouse_up'] = True
@@ -240,8 +235,12 @@ class Game:
             pg.draw.line(self.win, WHITE, (BOARD_TOP_LEFT[0], y_val), (BOARD_TOP_LEFT[0] + BOARD_WIDTH_PIX, y_val))
 
         # Drawing score
-        text = self.font.render(str(self.score), False, WHITE)
-        self.win.blit(text, (SCREEN_WIDTH / 2, 50))
+        score_text = self.font.render(str(self.score), False, WHITE)
+        self.win.blit(score_text, (SCREEN_WIDTH / 2, 50))
+
+        level_text = self.font.render(str(self.level), False, WHITE)
+        self.win.blit(level_text, (160, 100))
+
 
         # Update screen to show changes
         pg.display.flip()
@@ -256,13 +255,13 @@ class Game:
             if self.holdTet:
                 temp = self.currTet
                 self.currTet = self.holdTet
-                self.nextTet = random.choice(self.tetrominoes)(self)
                 self.holdTet = type(temp)(self)
                 return
 
             self.holdTet = type(self.currTet)(self)
             self.currTet = self.nextTet
             self.nextTet = random.choice(self.tetrominoes)(self)
+
 
 # Creates a game and starts it
 game = Game()

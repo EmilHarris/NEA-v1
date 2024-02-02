@@ -15,7 +15,8 @@ BOARD_BORDER_WIDTH = 5
 # Game settings
 
 ROT_TIME = 150
-FALL_TIME = 170
+FALL_TIME = 300
+FAST_FALL_TIME = 40
 
 # Display settings
 
