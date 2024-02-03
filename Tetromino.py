@@ -80,7 +80,7 @@ class Tetromino:
         if axis == self.game.floorBlocks:
             for block in proposed:
                 if block in self.game.floorBlocks:
-                   return False
+                    return False
 
         elif axis == self.game.full_blocks:
             for block in axis:

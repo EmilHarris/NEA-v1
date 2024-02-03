@@ -3,6 +3,7 @@
 from Tetromino import *
 from menu import *
 import sys, random, os
+from account import *
 
 
 # Game class for controlling the program
@@ -15,7 +16,7 @@ class Game:
     currTet: Tetromino
     nextTet: Tetromino
     running: bool
-    MENU: Menu
+    main_menu: Menu
     score: int
     level: int
     holdTet: Tetromino
@@ -25,8 +26,7 @@ class Game:
     # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
     def __init__(self):
         pg.init()
-        pg.font.init()
-        self.font = pg.font.SysFont('Comic Sans MS', 30)
+        self.font = LARGE_FONT
         self.win = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pg.RESIZABLE)
         pg.display.set_caption(TITLE)
         self.clock = pg.time.Clock()
@@ -120,17 +120,22 @@ class Game:
 
     # Starts the menu including necessary buttons and runs a loop
     def menu(self):
-        self.MENU = Menu()
+        self.main_menu = Menu()
 
         # Create play button
         cwd = os.getcwd()
-        self.MENU.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, RED, GREEN, self.start_game, os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg'))
+        self.main_menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, self.start_game, 'img', imgs=(os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg')))
+        self.main_menu.add_box(TextBox((SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2), 200, 30, self.win, (DARK_BLUE, LIGHT_BLUE)))
 
         while True:
             self.win.fill(BLACK)
-            events = self.get_events()
+            event_list = self.get_events()
 
-            self.MENU.update(events['mouse_up'], self.win)
+            for event in event_list:
+                if event.type == QUIT:
+                    self.quit()
+
+            self.main_menu.update(self.win, event_list)
 
             pg.display.flip()
 
@@ -155,19 +160,23 @@ class Game:
         self.running = True
         while self.running:
             self.dt = self.clock.tick(FPS) / 1000
-            self.get_events()
+            self.game_events()
             self.update()
             self.draw()
 
     # Gets and responds to all pygame events
-    def get_events(self) -> dict:
-        events = {'mouse_up': False}
+    def get_events(self) -> list[pg.event]:
+        return pg.event.get()
 
-        for event in pg.event.get():
+    def game_events(self):
+        event_list = self.get_events()
+
+        for event in event_list:
             if event.type == QUIT:
                 self.quit()
 
             if event.type == KEYDOWN:
+
                 keys = pg.key.get_pressed()
                 if keys[K_ESCAPE]:
                     self.pause()
@@ -177,11 +186,6 @@ class Game:
 
                 if keys[K_SPACE]:
                     self.currTet.hard_drop()
-
-            if event.type == MOUSEBUTTONUP:
-                events['mouse_up'] = True
-
-        return events
 
     @staticmethod
     def pause():

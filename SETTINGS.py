@@ -1,3 +1,5 @@
+import pygame as pg
+
 # Board settings
 
 SCREEN_WIDTH = 600
@@ -23,6 +25,11 @@ FAST_FALL_TIME = 40
 FPS = 30
 MOUSE_SENSITIVITY_X = 1.5
 TITLE = 'Tetris'
+
+# Menu things
+pg.font.init()
+LARGE_FONT = pg.font.SysFont('Comic Sans MS', 30)
+SMALL_FONT = pg.font.SysFont('Comic Sans MS', 20)
 
 # Colours
 
