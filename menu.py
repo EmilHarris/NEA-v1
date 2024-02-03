@@ -16,8 +16,7 @@ class Menu:
         self.active_box = None
 
     # Creates a button
-    def create_button(self, top_left, width, height, func, kind, colours=None, imgs=None, border_width=None):
-        button = Button(top_left, width, height, func, kind, colours=colours, imgs=imgs, border_width=border_width)
+    def add_button(self, button):
         self.buttons.append(button)
 
     def add_box(self, box):
@@ -56,6 +55,9 @@ class Menu:
                 self.active_box = text_box
                 self.active_box.active()
 
+    def return_data(self):
+        return [box.text for box in self.text_boxes]
+
 # Button class used to make a button
 class Button:
     rect: pg.rect.Rect
@@ -67,13 +69,13 @@ class Button:
     img: pg.image
     type: str
 
-    def __init__(self, top_left: tuple, width: int | float, height: int | float, func, kind: str, colours=None, imgs=None, border_radius=5, border_width=None):
+    def __init__(self, top_left: tuple, width: int | float, height: int | float, func, border_radius=5, border_width=None):
         self.rect = pg.rect.Rect(top_left, (width, height))
         self.border_radius = border_radius
         self.func = func
 
         # Creates standard and hover images
-        def img_config(img: str, shrink: bool = False):
+        '''def img_config(img: str, shrink: bool = False):
             scale = 1
             if shrink:
                 scale = 0.9
@@ -83,7 +85,7 @@ class Button:
             return pg.transform.scale(img, (width * scale, height * scale))
 
         self.img_reg = img_config(imgs[0], False)
-        self.img_int = img_config(imgs[1], True)
+        self.img_int = img_config(imgs[1], True)'''
 
     # Checks if the mouse is over the button
     def hovered(self, mouse_pos) -> bool:
@@ -91,25 +93,37 @@ class Button:
             self.on_hover()
             return True
 
-        self.img_active = self.img_reg
+        #self.img_active = self.img_reg
         return False
 
     # Changes appearance when mouse is over button
     def on_hover(self):
-        self.img_active = self.img_int
+        # self.img_active = self.img_int
+        pass
 
     # Responds when the button has been clicked
     def on_click(self):
-        self.func()
+        try:
+            self.func()
+
+        except TypeError:
+            for func in self.func:
+                func()
 
     # Draws the button
     def draw(self, win):
-        win.blit(self.img_active, self.rect)
+        pg.draw.rect(win, DARK_BLUE, self.rect, border_radius=self.border_radius)
 
 
 class TextButton(Button):
-    def __init__(self, top_left, width, height, ):
-        pass
+    def __init__(self, top_left, width, height, func, text, border_radius=5, border_width=None):
+        super().__init__(top_left, width, height, func, border_radius=border_radius, border_width=border_width)
+        self.text = text
+
+    def draw(self, win):
+        super().draw(win)
+        text = SMALL_FONT.render(self.text, False, WHITE)
+        win.blit(text, (self.rect.left + self.rect.width / 3, self.rect.top + self.rect.height / 2 - 14))
 
 
 class TextBox:

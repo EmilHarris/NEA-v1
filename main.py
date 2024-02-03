@@ -118,14 +118,71 @@ class Game:
 
         self.level = (self.lines_cleared // 10) + 1
 
+    def start_menu(self):
+        start_menu = Menu()
+
+        login_button = TextButton((SCREEN_WIDTH / 2 - 50, 300), 100, 50, self.start_game, text='log in')
+        start_menu.add_button(login_button)
+
+        signup_button = TextButton((SCREEN_WIDTH / 2 - 50, 500), 100, 50, self.sign_up, text='sign up')
+        start_menu.add_button(signup_button)
+
+        while True:
+            self.win.fill(BLACK)
+            event_list = self.get_events()
+
+            for event in event_list:
+                if event.type == QUIT:
+                    self.quit()
+
+            start_menu.update(self.win, event_list)
+
+            pg.display.flip()
+
+    def sign_up(self):
+
+        signup_menu = Menu()
+
+        def create_user():
+            username, password = signup_menu.return_data()
+            new_user = User(username, password)
+
+        username_box = TextBox((SCREEN_WIDTH / 2 - 100, 200), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        signup_menu.add_box(username_box)
+
+        password_box = TextBox((SCREEN_WIDTH / 2 - 100, 400), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        signup_menu.add_box(password_box)
+
+        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 600), 100, 50, (create_user, self.game_menu), 'Submit')
+        signup_menu.add_button(submit_button)
+
+        username_text = SMALL_FONT.render('Username: ', False, WHITE)
+
+        password_text = SMALL_FONT.render('Password: ', False, WHITE)
+
+        while True:
+            self.win.fill(BLACK)
+            event_list = self.get_events()
+
+            for event in event_list:
+                if event.type == QUIT:
+                    self.quit()
+
+            signup_menu.update(self.win, event_list)
+
+            self.win.blit(username_text, (SCREEN_WIDTH / 2 - 50, 170))
+            self.win.blit(password_text, (SCREEN_WIDTH / 2 - 50, 370))
+
+            pg.display.flip()
+
     # Starts the menu including necessary buttons and runs a loop
-    def menu(self):
+    def game_menu(self):
         self.main_menu = Menu()
 
         # Create play button
         cwd = os.getcwd()
-        self.main_menu.create_button((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 200, 90, self.start_game, 'img', imgs=(os.path.join(cwd, 'venv/img/play_button_reg.jpeg'), os.path.join(cwd, 'venv/img/play_button_hov.jpeg')))
-        self.main_menu.add_box(TextBox((SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2), 200, 30, self.win, (DARK_BLUE, LIGHT_BLUE)))
+        play_button = TextButton((BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100, BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100), 150, 50, self.start_game, 'Play')
+        self.main_menu.add_button(play_button)
 
         while True:
             self.win.fill(BLACK)
@@ -269,4 +326,4 @@ class Game:
 
 # Creates a game and starts it
 game = Game()
-game.menu()
+game.start_menu()
