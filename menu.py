@@ -3,6 +3,7 @@
 import pygame as pg
 from SETTINGS import *
 
+
 # Menu class creates a menu before game starts
 class Menu:
     buttons: list
@@ -34,6 +35,16 @@ class Menu:
                 if event.type == pg.KEYDOWN:
                     if event.key == pg.K_BACKSPACE:
                         self.active_box.text = self.active_box.text[:-1]
+
+                    elif event.key == pg.K_TAB:
+                        try:
+                            i = self.text_boxes.index(self.active_box)
+                            self.active_box.passive()
+                            self.active_box = self.text_boxes[i + 1]
+                            self.active_box.active()
+
+                        except IndexError:
+                            pass
 
                     else:
                         self.active_box.text += event.unicode

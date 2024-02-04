@@ -19,9 +19,10 @@ class Game:
     main_menu: Menu
     score: int
     level: int
-    holdTet: Tetromino
+    holdTet: Tetromino | None
     held_this_turn: bool = False
     lines_cleared: int = 0
+    current_user: User
 
     # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
     def __init__(self):
@@ -121,7 +122,7 @@ class Game:
     def start_menu(self):
         start_menu = Menu()
 
-        login_button = TextButton((SCREEN_WIDTH / 2 - 50, 300), 100, 50, self.start_game, text='log in')
+        login_button = TextButton((SCREEN_WIDTH / 2 - 50, 300), 100, 50, self.log_in, text='log in')
         start_menu.add_button(login_button)
 
         signup_button = TextButton((SCREEN_WIDTH / 2 - 50, 500), 100, 50, self.sign_up, text='sign up')
@@ -139,26 +140,33 @@ class Game:
 
             pg.display.flip()
 
-    def sign_up(self):
+    def sign_up(self, error: str = ''):
 
         signup_menu = Menu()
 
         def create_user():
             username, password = signup_menu.return_data()
-            new_user = User(username, password)
+            if username in USERS:
+                self.sign_up('Username taken')
+            self.current_user = User(username, password)
 
-        username_box = TextBox((SCREEN_WIDTH / 2 - 100, 200), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         signup_menu.add_box(username_box)
 
-        password_box = TextBox((SCREEN_WIDTH / 2 - 100, 400), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        password_box = TextBox((SCREEN_WIDTH / 2 - 100, 250), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         signup_menu.add_box(password_box)
 
-        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 600), 100, 50, (create_user, self.game_menu), 'Submit')
+        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 400), 100, 50, (create_user, self.game_menu), 'Submit')
         signup_menu.add_button(submit_button)
+
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.start_menu, 'Back')
+        signup_menu.add_button(back_button)
 
         username_text = SMALL_FONT.render('Username: ', False, WHITE)
 
         password_text = SMALL_FONT.render('Password: ', False, WHITE)
+
+        error_text = SMALL_FONT.render(error, False, RED)
 
         while True:
             self.win.fill(BLACK)
@@ -170,8 +178,57 @@ class Game:
 
             signup_menu.update(self.win, event_list)
 
-            self.win.blit(username_text, (SCREEN_WIDTH / 2 - 50, 170))
-            self.win.blit(password_text, (SCREEN_WIDTH / 2 - 50, 370))
+            self.win.blit(username_text, (SCREEN_WIDTH / 2 - 50, 70))
+            self.win.blit(password_text, (SCREEN_WIDTH / 2 - 50, 220))
+            self.win.blit(error_text, (SCREEN_WIDTH / 2 - 50, 600))
+
+            pg.display.flip()
+
+    def log_in(self, error: str = ''):
+
+        login_menu = Menu()
+
+        def set_user():
+            username, password = login_menu.return_data()
+            if username in USERS.keys():
+                if hashlib.md5(password.encode()).hexdigest() == USERS[username]['hash_password']:
+                    high_score = USERS[username]['high_score']
+                    self.current_user = User(username, password, high_score)
+                    return
+
+            self.log_in('Incorrect username or password')
+
+        username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        login_menu.add_box(username_box)
+
+        password_box = TextBox((SCREEN_WIDTH / 2 - 100, 250), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        login_menu.add_box(password_box)
+
+        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 400), 100, 50, (set_user, self.game_menu), 'Submit')
+        login_menu.add_button(submit_button)
+
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.start_menu, 'Back')
+        login_menu.add_button(back_button)
+
+        username_text = SMALL_FONT.render('Username: ', False, WHITE)
+
+        password_text = SMALL_FONT.render('Password: ', False, WHITE)
+
+        error_text = SMALL_FONT.render(error, False, RED)
+
+        while True:
+            self.win.fill(BLACK)
+            event_list = self.get_events()
+
+            for event in event_list:
+                if event.type == QUIT:
+                    self.quit()
+
+            login_menu.update(self.win, event_list)
+
+            self.win.blit(username_text, (SCREEN_WIDTH / 2 - 50, 70))
+            self.win.blit(password_text, (SCREEN_WIDTH / 2 - 50, 220))
+            self.win.blit(error_text, (SCREEN_WIDTH / 2 - 200, 600))
 
             pg.display.flip()
 
@@ -193,6 +250,29 @@ class Game:
                     self.quit()
 
             self.main_menu.update(self.win, event_list)
+
+            pg.display.flip()
+
+    def game_over_menu(self):
+
+        game_over_menu = Menu()
+
+        score_text = LARGE_FONT.render(str(self.score), False, WHITE)
+
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.game_menu, 'Back')
+        game_over_menu.add_button(back_button)
+
+        while True:
+            self.win.fill(BLACK)
+            event_list = self.get_events()
+
+            for event in event_list:
+                if event.type == QUIT:
+                    self.quit()
+
+            game_over_menu.update(self.win, event_list)
+
+            self.win.blit(score_text, (SCREEN_WIDTH / 2 - 200, 100))
 
             pg.display.flip()
 

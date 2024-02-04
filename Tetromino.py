@@ -32,7 +32,7 @@ class Tetromino:
         self.lastFall = pg.time.get_ticks()
         if not self.check_blocks(self.blocks):
             pg.mouse.set_visible(True)
-            self.game.game_menu()
+            self.game.game_over_menu()
 
     # Rotates the tetromino, -1 for cw, 1 for anti-cw
     def rotate(self, direction: int):
