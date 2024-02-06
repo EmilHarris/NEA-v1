@@ -1,6 +1,34 @@
 {
    "e": {
       "hash_password": "e1671797c52e15f763380b45e841ec32",
+      "high_score": 19220
+   },
+   "franisthebest": {
+      "hash_password": "1d8807c99b672f4d5f54444becf4daec",
       "high_score": 0
+   },
+   "TETRISGOAT": {
+      "hash_password": "56ab3b73804c02e2084b159958e9c27b",
+      "high_score": 0
+   },
+   "josh": {
+      "hash_password": "f94adcc3ddda04a8f34928d862f404b4",
+      "high_score": 0
+   },
+   "poo": {
+      "hash_password": "f3ede926587776a8cd79fb2afe4e07b4",
+      "high_score": 0
+   },
+   "m": {
+      "hash_password": "6f8f57715090da2632453988d9a1501b",
+      "high_score": 0
+   },
+   "l": {
+      "hash_password": "2db95e8e1a9267b7a1188556b2013b33",
+      "high_score": 40
+   },
+   "Emil": {
+      "hash_password": "f7cb3054af5084f5b0d84703c867349b",
+      "high_score": 22480
    }
 }

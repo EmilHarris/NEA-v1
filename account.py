@@ -2,15 +2,14 @@ from menu import Button
 import hashlib
 import json
 
+USERS = {}
+
 try:
     with open('users.json', 'r') as f:
         USERS = json.load(f)
 
 except json.decoder.JSONDecodeError:
     USERS = {}
-
-print(USERS)
-
 
 class User:
     username: str
@@ -21,7 +20,9 @@ class User:
         self.username = username
         self.hash_password = hashlib.md5(password.encode()).hexdigest()
         self.high_score = highscore
-        self.save_to_file()
+
+    def get_dict(self):
+        return {self.username: {'hash_password': self.hash_password, 'high_score': self.high_score}}
 
     def save_to_file(self):
         user_dict = {self.username: {'hash_password': self.hash_password, 'high_score': self.high_score}}

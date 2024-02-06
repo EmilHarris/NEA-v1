@@ -15,10 +15,14 @@ class Menu:
         self.buttons = []
         self.text_boxes = []
         self.active_box = None
+        self.submit_button = None
 
     # Creates a button
-    def add_button(self, button):
+    def add_button(self, button, submit=False):
         self.buttons.append(button)
+
+        if submit:
+            self.submit_button = button
 
     def add_box(self, box):
         self.text_boxes.append(box)
@@ -46,6 +50,10 @@ class Menu:
                         except IndexError:
                             pass
 
+                    elif event.key == pg.K_RETURN:
+                        if self.submit_button:
+                            self.submit_button.on_click()
+
                     else:
                         self.active_box.text += event.unicode
 
@@ -69,34 +77,23 @@ class Menu:
     def return_data(self):
         return [box.text for box in self.text_boxes]
 
+
 # Button class used to make a button
 class Button:
     rect: pg.rect.Rect
-    img_reg: pg.surface.Surface
-    img_int: pg.surface.Surface
-    img_active: pg.surface.Surface
-    border_width: int
-    border_radius: int
-    img: pg.image
-    type: str
+    width: int
+    height: int
+    top_left: tuple[int | float, int | float]
 
-    def __init__(self, top_left: tuple, width: int | float, height: int | float, func, border_radius=5, border_width=None):
-        self.rect = pg.rect.Rect(top_left, (width, height))
-        self.border_radius = border_radius
+    def __init__(self, top_left: tuple, width: int, height:int, func):
+        self.top_left = top_left
+        self.width = width
+        self.height = height
         self.func = func
+        self.rect = self.get_rect()
 
-        # Creates standard and hover images
-        '''def img_config(img: str, shrink: bool = False):
-            scale = 1
-            if shrink:
-                scale = 0.9
-
-            img = pg.image.load(img)
-            img.set_colorkey(WHITE)
-            return pg.transform.scale(img, (width * scale, height * scale))
-
-        self.img_reg = img_config(imgs[0], False)
-        self.img_int = img_config(imgs[1], True)'''
+    def get_rect(self):
+        return pg.Rect(self.top_left, (self.width, self.height))
 
     # Checks if the mouse is over the button
     def hovered(self, mouse_pos) -> bool:
@@ -104,12 +101,10 @@ class Button:
             self.on_hover()
             return True
 
-        #self.img_active = self.img_reg
         return False
 
     # Changes appearance when mouse is over button
     def on_hover(self):
-        # self.img_active = self.img_int
         pass
 
     # Responds when the button has been clicked
@@ -121,20 +116,63 @@ class Button:
             for func in self.func:
                 func()
 
-    # Draws the button
+
+class ImageButton(Button):
+    img: pg.image
+    img_dir: str
+    colour_key: None | str
+
+    def __init__(self, top_left, width, height, func, img, colour_key=None):
+        super().__init__(top_left, width, height, func)
+        self.img_dir = img
+        self.colour_key = colour_key
+        self.img_config()
+        self.img = pg.transform.scale(self.img, (self.width, self.height))
+
+    def img_config(self, scale: int | float = 1):
+        self.img = pg.transform.scale(pg.image.load(self.img_dir), (self.width * scale, self.height * scale))
+        if self.colour_key:
+            self.img.set_colorkey(self.colour_key)
+
+    def hovered(self, mouse_pos) -> bool:
+        self.img_config()
+        self.top_left = self.rect.topleft
+        return super().hovered(mouse_pos)
+
+    def on_hover(self):
+        self.img_config(0.9)
+        x_val = self.rect.topleft[0] + (self.width - self.img.get_width()) / 2
+        y_val = self.rect.topleft[1] + (self.height - self.img.get_height()) / 2
+        self.top_left = (x_val, y_val)
+
     def draw(self, win):
-        pg.draw.rect(win, DARK_BLUE, self.rect, border_radius=self.border_radius)
+        win.blit(self.img, self.top_left)
 
 
 class TextButton(Button):
-    def __init__(self, top_left, width, height, func, text, border_radius=5, border_width=None):
-        super().__init__(top_left, width, height, func, border_radius=border_radius, border_width=border_width)
+    border_radius: int
+    border_width: int
+    text: str
+
+    def __init__(self, top_left, width, height, func, text, border_radius=5, border_width=0):
+        super().__init__(top_left, width, height, func)
+        self.border_radius = border_radius
+        self.border_width = border_width
         self.text = text
 
     def draw(self, win):
-        super().draw(win)
+        pg.draw.rect(win, DARK_BLUE, self.rect, width=self.border_width, border_radius=self.border_radius)
         text = SMALL_FONT.render(self.text, False, WHITE)
-        win.blit(text, (self.rect.left + self.rect.width / 3, self.rect.top + self.rect.height / 2 - 14))
+        x_val = self.rect.left + (self.rect.width / 2) - (text.get_width() / 2)
+        y_val = self.rect.top + (self.rect.height / 2) - (text.get_height() / 2)
+        win.blit(text, (x_val, y_val))
+
+    def hovered(self, mouse_pos) -> bool:
+        self.rect = self.get_rect()
+        return super().hovered(mouse_pos)
+
+    def on_hover(self):
+        self.rect = pg.Rect(self.rect.left + 4, self.rect.top + 2, self.rect.width - 8, self.rect.height - 4)
 
 
 class TextBox:
