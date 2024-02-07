@@ -126,9 +126,11 @@ class Game:
 
         self.level = (self.lines_cleared // 10) + 1
 
+    # First menu player sees - log in or sign up
     def start_menu(self):
         start_menu = Menu()
 
+        # create buttons
         login_button = TextButton((SCREEN_WIDTH / 2 - 50, 300), 100, 50, self.log_in, text='Log in')
         start_menu.add_button(login_button)
 
@@ -137,6 +139,7 @@ class Game:
 
         start_menu.add_button(self.exit_button_black)
 
+        # draw and listen for events
         while True:
             self.win.fill(LIGHT_BLUE)
             event_list = self.get_events()
@@ -149,10 +152,12 @@ class Game:
 
             pg.display.flip()
 
+    # Menu used to create an account
     def sign_up(self, error: str = ''):
 
         signup_menu = Menu()
 
+        # Makes a new account
         def create_user():
             username, password = signup_menu.return_data()
             if username in self.users:
@@ -160,6 +165,7 @@ class Game:
             self.current_user = User(username, password)
             self.users = self.users | self.current_user.get_dict()
 
+        # Makes buttons, input boxes and text
         username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         signup_menu.add_box(username_box)
 
@@ -183,6 +189,7 @@ class Game:
         signup_menu.active_box = username_box
         username_box.active()
 
+        # draw and listen for events
         while True:
             self.win.fill(LIGHT_BLUE)
             event_list = self.get_events()
@@ -199,10 +206,12 @@ class Game:
 
             pg.display.flip()
 
+    # lets the user log in to an existing account
     def log_in(self, error: str = ''):
 
         login_menu = Menu()
 
+        # Loads the user into an object
         def set_user():
             username, password = login_menu.return_data()
             if username in self.users.keys():
@@ -212,6 +221,8 @@ class Game:
                     return
 
             self.log_in('Incorrect username or password')
+
+        # Creates buttons, boxes and text
 
         username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         login_menu.add_box(username_box)
@@ -236,6 +247,7 @@ class Game:
         login_menu.active_box = username_box
         username_box.active()
 
+        # draw and get events
         while True:
             self.win.fill(LIGHT_BLUE)
             event_list = self.get_events()
@@ -256,7 +268,7 @@ class Game:
     def game_menu(self):
         self.main_menu = Menu()
 
-        # Create play button
+        # Create buttons and text
         img = os.path.join(os.getcwd(), 'venv/img/menu-outline.1024x682.png')
         settings_button = ImageButton((40, 40), 40, 40, self.controls_menu, img)
         self.main_menu.add_button(settings_button)
@@ -275,6 +287,7 @@ class Game:
 
         self.main_menu.add_button(self.exit_button_black)
 
+        # draw and get events
         while True:
             self.win.fill(LIGHT_BLUE)
             event_list = self.get_events()
@@ -287,8 +300,10 @@ class Game:
 
             pg.display.flip()
 
+    # menu showing controls and volume setting
     def controls_menu(self):
 
+        # define some variables
         back = False
         top = 140
         x_vals = (40, 250, 400, 550)
@@ -297,11 +312,13 @@ class Game:
 
         controls_menu = Menu()
 
+        # returns to game menu
         def resume():
 
             nonlocal back
             back = True
 
+        # creates a row of text objects
         def create_row(action, control1, control2='N/A'):
             action_text = LARGE_FONT.render(action, False, DARK_BLUE)
             control1_text = LARGE_FONT.render(control1, False, GREEN)
@@ -309,6 +326,7 @@ class Game:
 
             return action_text, control1_text, control2_text
 
+        # draws a row of text objects
         def draw_row(texts):
             nonlocal last_y
             nonlocal x_vals
@@ -326,6 +344,8 @@ class Game:
 
             last_y += 40
 
+        # create rows
+
         rows.append(create_row('Action', 'Control', 'Alternate'))
         rows.append(create_row('move', 'mouse'))
         rows.append(create_row('rotate c/w', 'd', 'right'))
@@ -334,6 +354,8 @@ class Game:
         rows.append(create_row('hard drop', 'space', 'click(l)'))
         rows.append(create_row('pause', 'esc'))
 
+        # create text and buttons
+
         controls_text = LARGE_FONT.render('Controls', False, WHITE)
         x_val = (SCREEN_WIDTH - controls_text.get_width()) / 2
 
@@ -341,6 +363,8 @@ class Game:
         controls_menu.add_button(back_button)
 
         controls_menu.add_button(self.exit_button_black)
+
+        # Create slider and volume text
 
         length = 100
         volume_x_val = (SCREEN_WIDTH - length) / 2
@@ -352,6 +376,7 @@ class Game:
         volume_text = LARGE_FONT.render('Volume', False, BLACK)
         volume_x_val = (SCREEN_WIDTH - volume_text.get_width()) / 2
 
+        # draw and get events
         while not back:
             last_y = 100
             self.win.fill(LIGHT_BLUE)
@@ -373,14 +398,17 @@ class Game:
 
             controls_menu.update(self.win, event_list)
 
+            # Update volume to match slider
             pg.mixer.music.set_volume(volume_slider.get_val())
 
             self.win.blit(volume_text, (volume_x_val, 500))
 
             pg.display.flip()
 
+    # Menu displaying leaderboard
     def leaderboard_menu(self):
 
+        # define some variables
         back = False
         top = 140
         x_vals = (100, 310, 460)
@@ -389,17 +417,20 @@ class Game:
 
         leaderboard_menu = Menu()
 
+        # returns to game menu
         def resume():
 
             nonlocal back
             back = True
 
+        # creates a row of text objects
         def create_row(player, score):
             player_text = LARGE_FONT.render(player, False, DARK_BLUE)
             score_text = LARGE_FONT.render(score, False, GREEN)
 
             return player_text, score_text
 
+        # draws a row of text objects
         def draw_row(texts):
             nonlocal last_y
             nonlocal x_vals
@@ -417,6 +448,8 @@ class Game:
 
             last_y += 40
 
+        # Sorts users and creates a top 10
+
         sorted_users = sorted(self.users, key=lambda x: self.users[x]['high_score'], reverse=True)
         try:
             top_10 = sorted_users[:9]
@@ -427,14 +460,17 @@ class Game:
         for user in top_10:
             rows.append(create_row(user, str(self.users[user]['high_score'])))
 
+        # Create text and buttons
+
         leaderboard_text = LARGE_FONT.render('Leaderboard', False, WHITE)
         x_val = (SCREEN_WIDTH - leaderboard_text.get_width()) / 2
 
-        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.game_menu, 'Back')
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, resume, 'Back')
         leaderboard_menu.add_button(back_button)
 
         leaderboard_menu.add_button(self.exit_button_black)
 
+        # draw and get events
         while not back:
             last_y = 100
             self.win.fill(LIGHT_BLUE)
@@ -458,6 +494,7 @@ class Game:
 
             pg.display.flip()
 
+    # Menu when player pauses mid-game
     def pause_menu(self):
 
         pg.mouse.set_visible(True)
@@ -466,10 +503,13 @@ class Game:
 
         pause_menu = Menu()
 
+        # returns to game
         def resume():
             nonlocal back
             back = True
             pg.mouse.set_visible(False)
+
+        # creates buttons and text
 
         img = os.path.join(os.getcwd(), 'venv/img/icons8-pause-100.png')
         resume_button = ImageButton((SCREEN_WIDTH / 2 - 19, 400), 38, 50, resume, img, BLACK)
@@ -487,6 +527,7 @@ class Game:
         x_val = (SCREEN_WIDTH - high_score_text.get_width()) / 2
         self.win.blit(high_score_text, (x_val, 90))
 
+        # draw and get events
         while not back:
 
             event_list = self.get_events()
@@ -502,6 +543,7 @@ class Game:
 
         self.countdown()
 
+    # Counts back into game
     def countdown(self):
         last_count = pg.time.get_ticks()
         n = 3
@@ -521,9 +563,10 @@ class Game:
             self.win.blit(num_text, (x_val, 400))
             pg.display.flip()
 
-
+    # Menu displayed when game ends
     def game_over_menu(self):
 
+        # Create text and buttons
         self.current_user.high_score = self.score
 
         self.users[self.current_user.username]['high_score'] = self.score
@@ -536,6 +579,9 @@ class Game:
         back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.game_menu, 'Back')
         game_over_menu.add_button(back_button)
 
+        game_over_menu.add_button(self.exit_button_black)
+
+        # draw and get events
         while True:
             self.win.fill(BLACK)
             event_list = self.get_events()
@@ -670,6 +716,7 @@ class Game:
     def game_over(self):
         self.quit()
 
+    # Toggles tetromino in holding
     def hold_tet(self):
         if not self.held_this_turn:
             self.held_this_turn = True
@@ -683,11 +730,13 @@ class Game:
             self.currTet = self.nextTet
             self.nextTet = random.choice(self.tetrominoes)(self)
 
-# Creates a game and starts it
+# Creates a game
 game = Game()
 
+# Plays music
 pg.mixer.music.load('Tetris Theme.mp3')
 pg.mixer.music.play()
 pg.mixer.music.set_volume(0.15)
 
+# Opens the start menu
 game.start_menu()
