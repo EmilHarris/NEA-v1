@@ -4,6 +4,7 @@ from Tetromino import *
 from menu import *
 import sys, random, os
 from account import *
+from time import sleep
 
 
 # Game class for controlling the program
@@ -28,6 +29,7 @@ class Game:
     # Constructor method adds tetrominoes, array for full blocks and a rectangle for the board area
     def __init__(self):
         pg.init()
+        pg.mixer.init()
         self.font = LARGE_FONT
         self.win = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pg.RESIZABLE)
         pg.display.set_caption(TITLE)
@@ -36,6 +38,8 @@ class Game:
         img = os.path.join(os.getcwd(), 'venv/img/icons8-x-100.png')
         self.exit_button_black = ImageButton((SCREEN_WIDTH - 80, 40), 40, 40, self.quit, img)
         self.users = USERS
+        print(os.getcwd())
+        song_dir = os.path.join(os.getcwd(), 'venv/music/Original Tetris theme (Tetris Soundtrack).mp3')
 
     # When a block stops, it will be added to the fullBlocks array with this function
     def add_full_blocks(self, tetromino: Tetromino):
@@ -97,7 +101,6 @@ class Game:
 
             elif top_line < block[0][1] < bottom_line and not block[0][1] in lines:
                 count = 0
-                print('yes')
                 for line in lines:
                     if line > block[0][1]:
                         count += 1
@@ -156,7 +159,6 @@ class Game:
                 self.sign_up('Username taken')
             self.current_user = User(username, password)
             self.users = self.users | self.current_user.get_dict()
-            print(self.users)
 
         username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         signup_menu.add_box(username_box)
@@ -256,13 +258,20 @@ class Game:
 
         # Create play button
         img = os.path.join(os.getcwd(), 'venv/img/menu-outline.1024x682.png')
-        settings_button = ImageButton((40, 40), 40, 40, self.leaderboard_menu, img)
+        settings_button = ImageButton((40, 40), 40, 40, self.controls_menu, img)
         self.main_menu.add_button(settings_button)
 
-        x_val = BOARD_TOP_LEFT[0] + (BOARD_WIDTH_PIX / 2) - 100
+        x_val = SCREEN_WIDTH / 2 - 75
         y_val = BOARD_TOP_LEFT[1] + BOARD_HEIGHT_PIX - 100
         play_button = TextButton((x_val, y_val), 150, 50, self.start_game, 'Play')
         self.main_menu.add_button(play_button)
+
+        img = os.path.join(os.getcwd(), 'venv/img/icons8-rank-64.png')
+        img_rect = pg.image.load(img).get_rect()
+        x_val = (SCREEN_WIDTH - img_rect.width * 2) / 2
+
+        leaderboard_button = ImageButton((x_val, 200), img_rect.width * 2, img_rect.height * 2, self.leaderboard_menu, img)
+        self.main_menu.add_button(leaderboard_button)
 
         self.main_menu.add_button(self.exit_button_black)
 
@@ -328,8 +337,20 @@ class Game:
         controls_text = LARGE_FONT.render('Controls', False, WHITE)
         x_val = (SCREEN_WIDTH - controls_text.get_width()) / 2
 
-        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.game_menu, 'Back')
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 650), 100, 50, resume, 'Back')
         controls_menu.add_button(back_button)
+
+        controls_menu.add_button(self.exit_button_black)
+
+        length = 100
+        volume_x_val = (SCREEN_WIDTH - length) / 2
+        vol = pg.mixer.music.get_volume()
+
+        volume_slider = Slider((volume_x_val, 560), (volume_x_val + length, 560), line_colour=BLACK, start_val=vol)
+        controls_menu.add_slider(volume_slider)
+
+        volume_text = LARGE_FONT.render('Volume', False, BLACK)
+        volume_x_val = (SCREEN_WIDTH - volume_text.get_width()) / 2
 
         while not back:
             last_y = 100
@@ -352,13 +373,17 @@ class Game:
 
             controls_menu.update(self.win, event_list)
 
+            pg.mixer.music.set_volume(volume_slider.get_val())
+
+            self.win.blit(volume_text, (volume_x_val, 500))
+
             pg.display.flip()
 
     def leaderboard_menu(self):
 
         back = False
         top = 140
-        x_vals = (40, 250, 400)
+        x_vals = (100, 310, 460)
         last_y = 100
         rows = []
 
@@ -405,6 +430,11 @@ class Game:
         leaderboard_text = LARGE_FONT.render('Leaderboard', False, WHITE)
         x_val = (SCREEN_WIDTH - leaderboard_text.get_width()) / 2
 
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.game_menu, 'Back')
+        leaderboard_menu.add_button(back_button)
+
+        leaderboard_menu.add_button(self.exit_button_black)
+
         while not back:
             last_y = 100
             self.win.fill(LIGHT_BLUE)
@@ -445,6 +475,10 @@ class Game:
         resume_button = ImageButton((SCREEN_WIDTH / 2 - 19, 400), 38, 50, resume, img, BLACK)
         pause_menu.add_button(resume_button)
 
+        img = os.path.join(os.getcwd(), 'venv/img/icons8-x-100-2.png')
+        exit_button = ImageButton((SCREEN_WIDTH - 80, 40), 40, 40, self.quit, img, BLACK)
+        pause_menu.add_button(exit_button)
+
         score_text = self.font.render(str(self.score), False, WHITE)
         x_val = (SCREEN_WIDTH - score_text.get_width()) / 2
         self.win.blit(score_text, (x_val, 50))
@@ -465,6 +499,28 @@ class Game:
                         resume()
 
             self.draw(True, pause_menu, event_list)
+
+        self.countdown()
+
+    def countdown(self):
+        last_count = pg.time.get_ticks()
+        n = 3
+
+        while True:
+            if pg.time.get_ticks() - last_count > 1000:
+                n -= 1
+                last_count = pg.time.get_ticks()
+
+            if n == 0:
+                return
+
+            self.clock.tick(FPS)
+            self.draw()
+            num_text = LARGE_FONT.render(str(n), False, WHITE)
+            x_val = (SCREEN_WIDTH - num_text.get_width()) / 2
+            self.win.blit(num_text, (x_val, 400))
+            pg.display.flip()
+
 
     def game_over_menu(self):
 
@@ -552,6 +608,7 @@ class Game:
         except AttributeError:
             pass
 
+        pg.mixer.quit()
         pg.quit()
         sys.exit()
 
@@ -628,4 +685,9 @@ class Game:
 
 # Creates a game and starts it
 game = Game()
+
+pg.mixer.music.load('Tetris Theme.mp3')
+pg.mixer.music.play()
+pg.mixer.music.set_volume(0.15)
+
 game.start_menu()

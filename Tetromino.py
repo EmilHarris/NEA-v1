@@ -66,14 +66,28 @@ class Tetromino:
             self.blocks = new_blocks.copy()
             self.rect.get_rect()
 
+        org_centre = self.centre
+
         # makes sure block is not in wall
         if self.rect.left < 0:
             self.centre.x = -self.rect.dispLeft
             self.update_blocks()
 
+            if not self.check_blocks(self.blocks, axis=self.game.full_blocks):
+                self.centre = org_centre
+                self.update_blocks()
+                self.rotate(-direction)
+                print('left')
+
         if self.rect.right >= BOARD_WIDTH_BLK:
             self.centre.x = BOARD_WIDTH_BLK - 1 - self.rect.dispRight
             self.update_blocks()
+
+            if not self.check_blocks(self.blocks, axis=self.game.full_blocks):
+                self.centre = org_centre
+                self.update_blocks()
+                self.rotate(-direction)
+                print('right')
 
     # Checks if the block can move; returns True or False
     def check_blocks(self, proposed: list[vec], axis = None) -> bool:

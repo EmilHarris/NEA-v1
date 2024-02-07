@@ -9,11 +9,13 @@ class Menu:
     buttons: list
     click: bool = False
     text_boxes: list
+    sliders: list
 
     # Defines buttons attribute
     def __init__(self):
         self.buttons = []
         self.text_boxes = []
+        self.sliders = []
         self.active_box = None
         self.submit_button = None
 
@@ -27,9 +29,14 @@ class Menu:
     def add_box(self, box):
         self.text_boxes.append(box)
 
+    def add_slider(self, slider):
+        self.sliders.append(slider)
+
     # Updates state of buttons
     def update(self, win, events):
         self.click = False
+
+        clicked = pg.mouse.get_pressed()[0]
 
         for event in events:
             if event.type == pg.MOUSEBUTTONUP:
@@ -73,6 +80,12 @@ class Menu:
             if text_box.hovered(pg.mouse.get_pos()) and self.click:
                 self.active_box = text_box
                 self.active_box.active()
+
+        for slider in self.sliders:
+            if clicked and slider.hovered(pg.mouse.get_pos()):
+                slider.on_hover(pg.mouse.get_pos())
+
+            slider.draw(win)
 
     def return_data(self):
         return [box.text for box in self.text_boxes]
@@ -212,3 +225,82 @@ class TextBox:
 
         text = SMALL_FONT.render(str(self.text), False, WHITE)
         self.win.blit(text, (self.rect.left + 4, self.rect.top - 2))
+
+
+class Slider:
+    length: int
+    start: tuple[int, int]
+    end: tuple[int, int]
+    pos: float
+    axis: int
+    rect: pg.Rect
+
+    def __init__(self, start, end, line_colour=WHITE, dot_colour=DARK_BLUE, start_val=0):
+        self.start = start
+        self.end = end
+        self.hor_or_vert()
+        self.get_rect()
+        self.set_pos(start_val)
+        self.line_colour = line_colour
+        self.dot_colour = dot_colour
+
+    def hor_or_vert(self):
+        if self.start[0] == self.end[0]:
+            self.axis = 0
+
+        else:
+            self.axis = 1
+
+        dim = (self.axis + 1) % 2
+        self.length = self.end[dim] - self.start[dim]
+
+    def get_rect(self):
+        left, top = self.start
+
+        width = height = 0
+
+        if self.axis == 0:
+            left -= 10
+            top -= 5
+            width = 20
+            height = self.length + 5
+
+        elif self.axis == 1:
+            top -= 10
+            left -= 5
+            width = self.length + 5
+            height = 20
+
+        self.rect = pg.Rect(left, top, width, height)
+
+    def hovered(self, mouse_pos):
+        if self.rect.left < mouse_pos[0] < self.rect.right and self.rect.top < mouse_pos[1] < self.rect.bottom:
+            pg.mouse.set_cursor(pg.cursors.Cursor(pg.SYSTEM_CURSOR_HAND))
+            return True
+
+        return False
+
+    def on_hover(self, mouse_pos):
+        self.pos = mouse_pos[(self.axis + 1) % 2]
+
+    def set_pos(self, val):
+        self.pos = self.start[(self.axis + 1) % 2] + val * self.length
+
+    def get_val(self):
+        dim = (self.axis + 1) % 2
+        val = (self.pos - self.start[dim]) / self.length
+        if val < 0:
+            val = 0
+
+        return val
+
+    def draw(self, win):
+        pg.draw.line(win, self.line_colour, self.start, self.end, 3)
+        if self.axis == 0:
+            coords = self.start[0], self.pos
+
+        else:
+            coords = self.pos, self.start[1]
+
+        pg.draw.circle(win, self.dot_colour, coords, 10)
+

@@ -1,7 +1,7 @@
 {
    "e": {
       "hash_password": "e1671797c52e15f763380b45e841ec32",
-      "high_score": 19220
+      "high_score": 0
    },
    "franisthebest": {
       "hash_password": "1d8807c99b672f4d5f54444becf4daec",
@@ -30,5 +30,9 @@
    "Emil": {
       "hash_password": "f7cb3054af5084f5b0d84703c867349b",
       "high_score": 22480
+   },
+   "penis": {
+      "hash_password": "7ae9eeb7ce0fefd6716e259276f9f744",
+      "high_score": 340
    }
 }
