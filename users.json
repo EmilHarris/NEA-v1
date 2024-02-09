@@ -1,7 +1,7 @@
 {
    "e": {
       "hash_password": "e1671797c52e15f763380b45e841ec32",
-      "high_score": 11620
+      "high_score": 0
    },
    "franisthebest": {
       "hash_password": "1d8807c99b672f4d5f54444becf4daec",
@@ -13,7 +13,7 @@
    },
    "josh": {
       "hash_password": "f94adcc3ddda04a8f34928d862f404b4",
-      "high_score": 0
+      "high_score": 7280
    },
    "poo": {
       "hash_password": "f3ede926587776a8cd79fb2afe4e07b4",
@@ -34,5 +34,17 @@
    "penis": {
       "hash_password": "7ae9eeb7ce0fefd6716e259276f9f744",
       "high_score": 340
+   },
+   "feces": {
+      "hash_password": "1223b8c30a347321299611f873b449ad",
+      "high_score": 0
+   },
+   "noel": {
+      "hash_password": "5227b730e7c8cffb5d7bce6517659e25",
+      "high_score": 0
+   },
+   "": {
+      "hash_password": "d41d8cd98f00b204e9800998ecf8427e",
+      "high_score": 0
    }
 }

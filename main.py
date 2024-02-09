@@ -452,7 +452,7 @@ class Game:
 
         sorted_users = sorted(self.users, key=lambda x: self.users[x]['high_score'], reverse=True)
         try:
-            top_10 = sorted_users[:9]
+            top_10 = sorted_users[:10]
 
         except IndexError:
             top_10 = sorted_users
@@ -730,13 +730,33 @@ class Game:
             self.currTet = self.nextTet
             self.nextTet = random.choice(self.tetrominoes)(self)
 
+    def test(self):
+
+        test_menu = Menu()
+
+        test_box = TextBox((100, 100), 200, 30, self.win, (YELLOW, ORANGE))
+        test_menu.add_box(test_box)
+
+        img = os.path.join(os.getcwd(), 'venv/img/menu-right-outline.642x1024.png')
+        test_img_button = ImageButton((100, 200), 50, 50, self.start_game, img)
+        test_menu.add_button(test_img_button)
+
+        test_text_button = TextButton((100, 300), 100, 50, self.start_game, 'test', border_radius=5, border_width=2)
+        test_menu.add_button(test_text_button)
+
+        while True:
+            self.clock.tick(FPS)
+            self.win.fill(LIGHT_BLUE)
+            test_menu.update(self.win, self.get_events())
+            pg.display.flip()
+
 # Creates a game
 game = Game()
 
 # Plays music
 pg.mixer.music.load('Tetris Theme.mp3')
-pg.mixer.music.play()
+pg.mixer.music.play(loops=-1)
 pg.mixer.music.set_volume(0.15)
 
 # Opens the start menu
-game.start_menu()
+game.test()
