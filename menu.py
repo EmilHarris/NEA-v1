@@ -96,7 +96,7 @@ class Menu:
 
         # Updates state of sliders and draws them
         for slider in self.sliders:
-            if clicked and slider.hovered(pg.mouse.get_pos()):
+            if slider.hovered(pg.mouse.get_pos()) and clicked:
                 slider.on_hover(pg.mouse.get_pos())
 
             slider.draw(win)

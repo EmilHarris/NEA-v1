@@ -1,50 +1,58 @@
 {
    "e": {
       "hash_password": "e1671797c52e15f763380b45e841ec32",
-      "high_score": 0
+      "high_score": 16860
    },
-   "franisthebest": {
+   "user1": {
       "hash_password": "1d8807c99b672f4d5f54444becf4daec",
       "high_score": 0
    },
-   "TETRISGOAT": {
+   "user2": {
       "hash_password": "56ab3b73804c02e2084b159958e9c27b",
       "high_score": 0
    },
-   "josh": {
+   "user3": {
       "hash_password": "f94adcc3ddda04a8f34928d862f404b4",
       "high_score": 7280
    },
-   "poo": {
+   "user4": {
       "hash_password": "f3ede926587776a8cd79fb2afe4e07b4",
       "high_score": 0
    },
-   "m": {
+   "user5": {
       "hash_password": "6f8f57715090da2632453988d9a1501b",
       "high_score": 0
    },
-   "l": {
+   "user6": {
       "hash_password": "2db95e8e1a9267b7a1188556b2013b33",
       "high_score": 40
    },
-   "Emil": {
+   "user7": {
       "hash_password": "f7cb3054af5084f5b0d84703c867349b",
       "high_score": 22480
    },
-   "penis": {
+   "user8": {
       "hash_password": "7ae9eeb7ce0fefd6716e259276f9f744",
       "high_score": 340
    },
-   "feces": {
+   "user9": {
       "hash_password": "1223b8c30a347321299611f873b449ad",
       "high_score": 0
    },
-   "noel": {
+   "user10": {
       "hash_password": "5227b730e7c8cffb5d7bce6517659e25",
       "high_score": 0
    },
-   "": {
+   "user11": {
       "hash_password": "d41d8cd98f00b204e9800998ecf8427e",
+      "high_score": 0
+   },
+   "Fjefj\u00a7": {
+      "hash_password": "8b1a9953c4611296a827abf8c47804d7",
+      "high_score": 0
+   },
+   "Emilisisi": {
+      "hash_password": "65ec1e9ca4d5c2ca4ebc071b2047d1c1",
       "high_score": 0
    }
 }

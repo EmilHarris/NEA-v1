@@ -155,15 +155,37 @@ class Game:
     # Menu used to create an account
     def sign_up(self, error: str = ''):
 
+        valid = True
+
         signup_menu = Menu()
 
         # Makes a new account
         def create_user():
-            username, password = signup_menu.return_data()
+            username, password, check_password = signup_menu.return_data()
             if username in self.users:
                 self.sign_up('Username taken')
+
+            elif not check_match():
+                self.sign_up('Passwords do not match')
+
             self.current_user = User(username, password)
             self.users = self.users | self.current_user.get_dict()
+
+        def check_match():
+            nonlocal error_text
+
+            password, check_password = signup_menu.return_data()[1:]
+
+            if not password or not check_password:
+                return False
+
+            if not (password == check_password):
+                error_text = SMALL_FONT.render('Passwords do not match', False, RED)
+                return False
+
+            error_text = SMALL_FONT.render('', False, RED)
+
+            return True
 
         # Makes buttons, input boxes and text
         username_box = TextBox((SCREEN_WIDTH / 2 - 100, 100), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
@@ -172,10 +194,13 @@ class Game:
         password_box = TextBox((SCREEN_WIDTH / 2 - 100, 250), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
         signup_menu.add_box(password_box)
 
-        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 400), 100, 50, (create_user, self.game_menu), 'Submit')
+        check_password_box = TextBox((SCREEN_WIDTH / 2 - 100, 400), 200, 30, self.win, (LIGHT_GREY, DARK_GREY))
+        signup_menu.add_box(check_password_box)
+
+        submit_button = TextButton((SCREEN_WIDTH / 2 - 50, 525), 100, 50, (create_user, self.game_menu), 'Submit')
         signup_menu.add_button(submit_button, True)
 
-        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 550), 100, 50, self.start_menu, 'Back')
+        back_button = TextButton((SCREEN_WIDTH / 2 - 50, 650), 100, 50, self.start_menu, 'Back')
         signup_menu.add_button(back_button)
 
         signup_menu.add_button(self.exit_button_black)
@@ -183,6 +208,8 @@ class Game:
         username_text = SMALL_FONT.render('Username: ', False, WHITE)
 
         password_text = SMALL_FONT.render('Password: ', False, WHITE)
+
+        check_password_text = SMALL_FONT.render('Confirm Password: ', False, WHITE)
 
         error_text = SMALL_FONT.render(error, False, RED)
 
@@ -192,6 +219,7 @@ class Game:
         # draw and listen for events
         while True:
             self.win.fill(LIGHT_BLUE)
+            check_match()
             event_list = self.get_events()
 
             for event in event_list:
@@ -202,7 +230,10 @@ class Game:
 
             self.win.blit(username_text, (SCREEN_WIDTH / 2 - 50, 70))
             self.win.blit(password_text, (SCREEN_WIDTH / 2 - 50, 220))
-            self.win.blit(error_text, (SCREEN_WIDTH / 2 - 50, 600))
+            self.win.blit(check_password_text, (SCREEN_WIDTH / 2 - 50, 370))
+
+            x_val = (SCREEN_WIDTH - error_text.get_width()) / 2
+            self.win.blit(error_text, (x_val, 700))
 
             pg.display.flip()
 
@@ -539,28 +570,35 @@ class Game:
                     if event.key == K_ESCAPE:
                         resume()
 
-            self.draw(True, pause_menu, event_list)
+            self.draw(False)
+
+            pause_menu.update(self.win, event_list)
+
+            pg.display.flip()
 
         self.countdown()
 
     # Counts back into game
     def countdown(self):
+        self.clock.tick(FPS)
         last_count = pg.time.get_ticks()
         n = 3
+        num_text = LARGE_FONT.render(str(n), False, WHITE)
+        x_val = (SCREEN_WIDTH - num_text.get_width()) / 2
 
         while True:
-            if pg.time.get_ticks() - last_count > 1000:
-                n -= 1
-                last_count = pg.time.get_ticks()
-
             if n == 0:
                 return
+            elif pg.time.get_ticks() - last_count > 1000:
+                n -= 1
+                num_text = LARGE_FONT.render(str(n), False, WHITE)
+                x_val = (SCREEN_WIDTH - num_text.get_width()) / 2
+                last_count = pg.time.get_ticks()
 
             self.clock.tick(FPS)
-            self.draw()
-            num_text = LARGE_FONT.render(str(n), False, WHITE)
-            x_val = (SCREEN_WIDTH - num_text.get_width()) / 2
+            self.draw(False)
             self.win.blit(num_text, (x_val, 400))
+            self.get_events()
             pg.display.flip()
 
     # Menu displayed when game ends
@@ -663,7 +701,7 @@ class Game:
         self.currTet.update()
 
     # Draw EVERYTHING
-    def draw(self, paused=False, menu=None, events=None):
+    def draw(self, flip=True):
         # Resets screen every frame
         self.win.fill(BLACK)
 
@@ -706,11 +744,10 @@ class Game:
         level_text = self.font.render(str(self.level), False, WHITE)
         self.win.blit(level_text, (160, 100))
 
-        if paused:
-            menu.update(self.win, events)
+        if flip:
 
-        # Update screen to show changes
-        pg.display.flip()
+            # Update screen to show changes
+            pg.display.flip()
 
     # Ends Game
     def game_over(self):
@@ -744,11 +781,15 @@ class Game:
         test_text_button = TextButton((100, 300), 100, 50, self.start_game, 'test', border_radius=5, border_width=2)
         test_menu.add_button(test_text_button)
 
+        test_slider = Slider((100, 400), (200, 400), line_colour=BLACK, dot_colour=GREEN, start_val=0.5)
+        test_menu.add_slider(test_slider)
+
         while True:
             self.clock.tick(FPS)
             self.win.fill(LIGHT_BLUE)
             test_menu.update(self.win, self.get_events())
             pg.display.flip()
+
 
 # Creates a game
 game = Game()
@@ -759,4 +800,4 @@ pg.mixer.music.play(loops=-1)
 pg.mixer.music.set_volume(0.15)
 
 # Opens the start menu
-game.test()
+game.start_menu()
